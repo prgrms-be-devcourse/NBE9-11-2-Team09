@@ -1,7 +1,7 @@
 package com.example.parking.domain.reservation.entity;
 
 import com.example.parking.domain.parking.entity.ParkingLot;
-import com.example.parking.domain.parking.entity.ParkingSpot;
+import com.example.parking.domain.parkingspot.entity.ParkingSpot;
 import com.example.parking.domain.user.entity.User;
 // 아직 ParkingLot, ParkingSpot 엔티티가 없다면 임포트 에러가 날 수 있으니 패키지 경로를 확인하세요.
 import jakarta.persistence.*;

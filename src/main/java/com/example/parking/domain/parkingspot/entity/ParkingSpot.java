@@ -1,5 +1,8 @@
-package com.example.parking.domain.parking.entity;
+package com.example.parking.domain.parkingspot.entity;
 
+import com.example.parking.domain.parking.entity.ParkingLot;
+import com.example.parking.domain.parking.entity.SpotStatus;
+import com.example.parking.domain.parking.entity.SpotType;
 import jakarta.persistence.*;
 import lombok.*;
 

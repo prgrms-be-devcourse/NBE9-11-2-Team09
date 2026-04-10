@@ -1,5 +1,6 @@
 package com.example.parking.domain.parking.entity;
 
+import com.example.parking.domain.parkingspot.entity.ParkingSpot;
 import jakarta.persistence.*;
 import lombok.*;
 import java.time.LocalTime;
