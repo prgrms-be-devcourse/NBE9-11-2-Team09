@@ -1,9 +1,14 @@
 package com.example.parking.domain.user.dto;
 
+import com.example.parking.domain.user.entity.VehicleType;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 
+@Getter// 누락된 Getter 어노테이션 추가
+@NoArgsConstructor // 누락된 NoArgsConstructor 어노테이션 추가
 public class SignupReqDto {
 
     @NotBlank(message = "이메일은 필수입니다.")
@@ -20,6 +25,6 @@ public class SignupReqDto {
     private String plateNumber;
 
     @NotBlank(message = "차량 종류는 필수입니다.")
-    private String vehicleType;
+    private VehicleType vehicleType;
 
 }
