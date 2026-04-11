@@ -1,6 +1,6 @@
-package com.example.parking.domain.parkingLot.service;
+package com.example.parking.domain.parkingLot.external;
 
-import com.example.parking.domain.parkingLot.dto.ParkingApiResDto;
+import com.example.parking.domain.parkingLot.external.dto.ParkingApiResDto;
 import org.springframework.web.client.RestClient;
 
 public class ParkingOpenApiClient {

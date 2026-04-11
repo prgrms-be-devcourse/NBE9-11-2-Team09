@@ -1,4 +1,4 @@
-package com.example.parking.domain.parkingLot.dto;
+package com.example.parking.domain.parkingLot.external.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
