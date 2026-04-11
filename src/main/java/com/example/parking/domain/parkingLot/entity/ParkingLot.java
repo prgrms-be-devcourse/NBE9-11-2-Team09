@@ -1,4 +1,4 @@
-package com.example.parking.domain.parking.entity;
+package com.example.parking.domain.parkingLot.entity;
 
 import com.example.parking.domain.parkingspot.entity.ParkingSpot;
 import jakarta.persistence.*;
@@ -17,6 +17,10 @@ public class ParkingLot {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "parking_lot_id")
     private Long id;
+
+    // 외부 공공데이터의 주차장 식별값
+    @Column(nullable = false, unique = true)
+    private String externalId;
 
     @Column(name = "parking_lot_name", nullable = false, length = 100)
     private String name;
