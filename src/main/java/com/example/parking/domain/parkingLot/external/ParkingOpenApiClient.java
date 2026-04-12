@@ -1,6 +1,7 @@
 package com.example.parking.domain.parkingLot.external;
 
 import com.example.parking.domain.parkingLot.external.dto.ParkingApiResDto;
+import jakarta.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClient;
@@ -18,7 +19,7 @@ public class ParkingOpenApiClient {
     private final String apiKey;
 
     // 생성자에서 API 키 주입 및 RestClient 초기화
-    public ParkingOpenApiClient(@Value("${parking.api.key}") String apiKey) {
+    public ParkingOpenApiClient(@Value("${openapi.seoul.key}") String apiKey) {
         this.apiKey = apiKey;
         this.restClient = RestClient.builder()
                 .baseUrl("http://openapi.seoul.go.kr:8088") // 서울시 공공데이터 API 기본 URL
