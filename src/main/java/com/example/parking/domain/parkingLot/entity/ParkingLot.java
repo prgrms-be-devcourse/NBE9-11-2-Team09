@@ -45,13 +45,30 @@ public class ParkingLot {
     private List<ParkingSpot> spots = new ArrayList<>();
 
     @Builder
-    public ParkingLot(String name, String address, Integer totalSpot, Integer price,
-                      LocalTime operationStartTime, LocalTime operationEndTime) {
+    public ParkingLot(String externalId, String name, String address, Integer totalSpot,
+                      Integer price, LocalTime operationStartTime, LocalTime operationEndTime) {
+        this.externalId = externalId;
         this.name = name;
         this.address = address;
         this.totalSpot = totalSpot;
         this.price = price;
         this.operationStartTime = operationStartTime;
         this.operationEndTime = operationEndTime;
+    }
+
+    // 외부 API에서 받은 값을 사용해 ParkingLot 엔티티를 생성하는 정적 팩토리 메서드
+    public static ParkingLot of(String externalId, String name, String address, Integer totalSpot) {
+        return ParkingLot.builder()
+                .externalId(externalId)
+                .name(name)
+                .address(address)
+                .totalSpot(totalSpot)
+                .build();
+    }
+
+    public void updateInfo(String name, String address, Integer totalCapacity) {
+        this.name = name;
+        this.address = address;
+        this.totalSpot = totalSpot;
     }
 }
