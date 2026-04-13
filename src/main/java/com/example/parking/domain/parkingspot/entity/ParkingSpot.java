@@ -9,7 +9,7 @@ import lombok.*;
 @Entity
 @Table(name = "parking_spots")
 @Getter
-@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@NoArgsConstructor
 public class ParkingSpot {
 
     @Id
@@ -37,6 +37,13 @@ public class ParkingSpot {
         this.parkingLot = parkingLot;
         this.number = number;
         this.type = type;
-        this.status = SpotStatus.AVAILABLE; // 초기 상태는 항상 사용 가능
+        this.status = SpotStatus.AVAILABLE;
+    }
+
+    public void reserve() {
+        if (this.status != SpotStatus.AVAILABLE) {
+            throw new IllegalStateException("이미 점유된 자리입니다.");
+        }
+        this.status = SpotStatus.OCCUPIED;
     }
 }
