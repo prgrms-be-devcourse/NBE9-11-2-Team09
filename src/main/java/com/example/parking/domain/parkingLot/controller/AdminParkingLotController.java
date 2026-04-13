@@ -19,7 +19,6 @@ import org.springframework.web.bind.annotation.RestController;
 //    private final ParkingLotSyncService parkingLotSyncService;
 //
 //    @PostMapping("/sync")
-//    @ResponseStatus(HttpStatus.NO_CONTENT)
 //    public void sync() {
 //        parkingLotSyncService.syncParkingLots();
 //    }
