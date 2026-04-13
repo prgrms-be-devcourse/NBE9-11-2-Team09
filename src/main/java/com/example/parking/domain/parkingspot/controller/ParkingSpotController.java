@@ -3,11 +3,9 @@ package com.example.parking.domain.parkingspot.controller;
 import com.example.parking.domain.parkingspot.dto.ParkingSpotDto;
 import com.example.parking.domain.parkingspot.entity.ParkingSpot;
 import com.example.parking.domain.parkingspot.service.ParkingSpotService;
-import com.example.parking.domain.user.entity.User;
 import com.example.parking.global.response.RsData;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
@@ -61,7 +59,7 @@ public class ParkingSpotController{
     ParkingSpot parkingSpot = parkingSpotService.reserve(spotId);
 
     return new RsData<>(
-        "%d번 자리 예약이 성공했습니다.".formatted(parkingSpot.getId()),
+        "%d번 자리 점유를 성공했습니다".formatted(parkingSpot.getId()),
         "201-1",
         new ParkingSpotResponseDto(
             new ParkingSpotDto(parkingSpot)

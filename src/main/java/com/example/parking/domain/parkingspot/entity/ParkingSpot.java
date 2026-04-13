@@ -40,6 +40,15 @@ public class ParkingSpot {
         this.status = SpotStatus.AVAILABLE;
     }
 
+    public static ParkingSpot create(ParkingLot parkingLot, String number, SpotType type) {
+        ParkingSpot spot = new ParkingSpot();
+        spot.parkingLot = parkingLot;
+        spot.number = number;
+        spot.type = type;
+        spot.status = SpotStatus.AVAILABLE; // 강제 고정
+        return spot;
+    }
+
     public void reserve() {
         if (this.status != SpotStatus.AVAILABLE) {
             throw new IllegalStateException("이미 점유된 자리입니다.");

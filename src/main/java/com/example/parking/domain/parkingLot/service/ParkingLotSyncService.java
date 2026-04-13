@@ -6,6 +6,7 @@ import com.example.parking.domain.parkingLot.external.dto.GetParkInfo;
 import com.example.parking.domain.parkingLot.external.dto.ParkingApiItem;
 import com.example.parking.domain.parkingLot.external.dto.ParkingApiResDto;
 import com.example.parking.domain.parkingLot.repository.ParkingLotRepository;
+import com.example.parking.domain.parkingspot.service.ParkingSpotService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -26,6 +27,7 @@ public class ParkingLotSyncService {
 
     private final ParkingOpenApiClient parkingOpenApiClient;
     private final ParkingLotRepository parkingLotRepository;
+    private final ParkingSpotService parkingSpotService;
 
     // [CUS-01] 외부 주차장 데이터를 우리 DB와 동기화
     public void syncParkingLots() {
@@ -55,9 +57,15 @@ public class ParkingLotSyncService {
             parkingLotRepository.findByExternalId(externalId)
                     .ifPresentOrElse(
                             parkingLot -> parkingLot.updateInfo(name, address, totalSpot),
-                            () -> parkingLotRepository.save(
-                                    ParkingLot.of(externalId, name, address, totalSpot)
-                            )
+                        () -> {
+                            ParkingLot saved = parkingLotRepository.save(
+                                ParkingLot.of(externalId, name, address, totalSpot)
+                            );
+                            // 신규 주차장일 때만 자리 생성
+                            if (totalSpot != null && totalSpot > 0) {
+                                parkingSpotService.createSpots(saved, totalSpot);
+                            }
+                        }
                     );
         }
     }
