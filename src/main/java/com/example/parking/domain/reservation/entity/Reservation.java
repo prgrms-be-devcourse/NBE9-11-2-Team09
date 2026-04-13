@@ -1,7 +1,7 @@
 package com.example.parking.domain.reservation.entity;
 
-import com.example.parking.domain.parking.entity.ParkingLot;
-import com.example.parking.domain.parkingspot.entity.ParkingSpot; // 패키지 경로 수정 완료
+import com.example.parking.domain.parkingLot.entity.ParkingLot;
+import com.example.parking.domain.parkingspot.entity.ParkingSpot;
 import com.example.parking.domain.user.entity.User;
 import jakarta.persistence.*;
 import lombok.*;
@@ -13,7 +13,9 @@ import java.time.LocalDateTime;
 @Entity
 @Table(name = "reservations")
 @Getter
-@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@Builder
+@AllArgsConstructor // 👈 빌더가 내부적으로 사용하는 '모든 필드 생성자' 생성
+@NoArgsConstructor(access = AccessLevel.PROTECTED) // 👈 JPA가 사용하는 '기본 생성자' 생성
 @EntityListeners(AuditingEntityListener.class)
 public class Reservation {
 

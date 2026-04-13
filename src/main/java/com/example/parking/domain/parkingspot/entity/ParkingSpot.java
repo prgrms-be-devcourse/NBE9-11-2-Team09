@@ -1,15 +1,15 @@
 package com.example.parking.domain.parkingspot.entity;
 
-import com.example.parking.domain.parking.entity.ParkingLot;
-import com.example.parking.domain.parking.entity.SpotStatus;
-import com.example.parking.domain.parking.entity.SpotType;
+import com.example.parking.domain.parkingLot.entity.ParkingLot;
+import com.example.parking.domain.parkingLot.entity.SpotStatus;
+import com.example.parking.domain.parkingLot.entity.SpotType;
 import jakarta.persistence.*;
 import lombok.*;
 
 @Entity
 @Table(name = "parking_spots")
 @Getter
-@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@NoArgsConstructor
 public class ParkingSpot {
 
     @Id
@@ -18,7 +18,7 @@ public class ParkingSpot {
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "parking_lot_id", nullable = false)
+    @   JoinColumn(name = "parking_lot_id", nullable = false)
     private ParkingLot parkingLot;
 
     @Enumerated(EnumType.STRING)
@@ -37,6 +37,22 @@ public class ParkingSpot {
         this.parkingLot = parkingLot;
         this.number = number;
         this.type = type;
-        this.status = SpotStatus.AVAILABLE; // 초기 상태는 항상 사용 가능
+        this.status = SpotStatus.AVAILABLE;
+    }
+
+    public static ParkingSpot create(ParkingLot parkingLot, String number, SpotType type) {
+        ParkingSpot spot = new ParkingSpot();
+        spot.parkingLot = parkingLot;
+        spot.number = number;
+        spot.type = type;
+        spot.status = SpotStatus.AVAILABLE; // 강제 고정
+        return spot;
+    }
+
+    public void reserve() {
+        if (this.status != SpotStatus.AVAILABLE) {
+            throw new IllegalStateException("이미 점유된 자리입니다.");
+        }
+        this.status = SpotStatus.OCCUPIED;
     }
 }
