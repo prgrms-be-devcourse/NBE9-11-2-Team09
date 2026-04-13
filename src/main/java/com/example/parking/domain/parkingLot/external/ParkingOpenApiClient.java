@@ -1,7 +1,6 @@
 package com.example.parking.domain.parkingLot.external;
 
 import com.example.parking.domain.parkingLot.external.dto.ParkingApiResDto;
-import jakarta.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClient;
