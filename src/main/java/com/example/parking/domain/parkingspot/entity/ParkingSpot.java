@@ -18,7 +18,7 @@ public class ParkingSpot {
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "parking_lot_id", nullable = false)
+    @   JoinColumn(name = "parking_lot_id", nullable = false)
     private ParkingLot parkingLot;
 
     @Enumerated(EnumType.STRING)

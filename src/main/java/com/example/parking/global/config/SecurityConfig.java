@@ -9,7 +9,7 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.header.writers.frameoptions.XFrameOptionsHeaderWriter;
 
 @Configuration
-@EnableWebSecurity
+@EnableWebSecurity(debug = true)
 public class SecurityConfig {
 
     @Bean
@@ -25,6 +25,7 @@ public class SecurityConfig {
                         .requestMatchers("/swagger-ui/**", "/v3/api-docs/**", "/swagger-ui.html").permitAll()
                         .requestMatchers("/api/users/signup", "/api/users/login", "/h2-console/**").permitAll()
                         .requestMatchers("/api/reservations/**").permitAll()
+                        .requestMatchers("/error").permitAll()
                         .anyRequest().authenticated()
                 );
 
