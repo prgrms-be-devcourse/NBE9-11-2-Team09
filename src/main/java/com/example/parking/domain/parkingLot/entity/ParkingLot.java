@@ -3,6 +3,7 @@ package com.example.parking.domain.parkingLot.entity;
 import com.example.parking.domain.parkingspot.entity.ParkingSpot;
 import jakarta.persistence.*;
 import lombok.*;
+
 import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -12,6 +13,11 @@ import java.util.List;
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class ParkingLot {
+
+    // 기본값 세팅
+    private static final Integer DEFAULT_PRICE = 0;
+    private static final LocalTime DEFAULT_OPERATION_START_TIME = LocalTime.MIN; // 00:00
+    private static final LocalTime DEFAULT_OPERATION_END_TIME = LocalTime.of(23, 59);
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -63,6 +69,9 @@ public class ParkingLot {
                 .name(name)
                 .address(address)
                 .totalSpot(totalSpot)
+                .price(DEFAULT_PRICE)
+                .operationStartTime(DEFAULT_OPERATION_START_TIME)
+                .operationEndTime(DEFAULT_OPERATION_END_TIME)
                 .build();
     }
 
