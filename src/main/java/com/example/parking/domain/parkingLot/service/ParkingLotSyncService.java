@@ -2,6 +2,7 @@ package com.example.parking.domain.parkingLot.service;
 
 import com.example.parking.domain.parkingLot.entity.ParkingLot;
 import com.example.parking.domain.parkingLot.external.ParkingOpenApiClient;
+import com.example.parking.domain.parkingLot.external.dto.GetParkInfo;
 import com.example.parking.domain.parkingLot.external.dto.ParkingApiItem;
 import com.example.parking.domain.parkingLot.external.dto.ParkingApiResDto;
 import com.example.parking.domain.parkingLot.repository.ParkingLotRepository;
@@ -29,17 +30,27 @@ public class ParkingLotSyncService {
     public void syncParkingLots() {
         ParkingApiResDto response = parkingOpenApiClient.fetchParkingLots();
 
-        if (response == null || response.data() == null) {
+        if (response == null || response.getParkInfo() == null) {
             return;
         }
 
-        for (ParkingApiItem item : response.data()) {
+        GetParkInfo parkInfo = response.getParkInfo();
+
+        if (parkInfo.row() == null || parkInfo.row().isEmpty()) {
+            return;
+        }
+
+        for (ParkingApiItem item : parkInfo.row()) {
             String externalId = item.pkltCd();
+
+            if (externalId == null || externalId.isBlank()) {
+                continue;
+            }
+
             String name = item.pkltNm();
             String address = item.addr();
-            Integer totalSpot = item.tpkct();
+            Integer totalSpot = item.tpkct() == null ? null : item.tpkct().intValue();
 
-            // externalId로 조회해서 있으면 수정, 없으면 새로 생성해서 저장
             parkingLotRepository.findByExternalId(externalId)
                     .ifPresentOrElse(
                             parkingLot -> parkingLot.updateInfo(name, address, totalSpot),
