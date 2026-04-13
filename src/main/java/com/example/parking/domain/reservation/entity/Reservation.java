@@ -13,7 +13,9 @@ import java.time.LocalDateTime;
 @Entity
 @Table(name = "reservations")
 @Getter
-@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@Builder
+@AllArgsConstructor // 👈 빌더가 내부적으로 사용하는 '모든 필드 생성자' 생성
+@NoArgsConstructor(access = AccessLevel.PROTECTED) // 👈 JPA가 사용하는 '기본 생성자' 생성
 @EntityListeners(AuditingEntityListener.class)
 public class Reservation {
 

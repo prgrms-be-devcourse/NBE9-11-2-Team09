@@ -97,9 +97,9 @@ class ReservationServiceTest {
 
         // then (검증: 결과가 내 예상과 똑같은지 확인한다)
         assertThat(results).hasSize(1); // 1건이 나와야 함
-        assertThat(results.get(0).getParkingLotName()).isEqualTo("강남역 공영 주차장"); // 주차장 이름이 매핑되었는지 확인
-        assertThat(results.get(0).getParkingSpotNumber()).isEqualTo("A-01"); // 자리 번호가 매핑되었는지 확인
-        assertThat(results.get(0).getStatus()).isEqualTo(ReservationStatus.PENDING); // 상태 확인
+        assertThat(results.get(0).parkingLotName()).isEqualTo("강남역 공영 주차장"); // 주차장 이름이 매핑되었는지 확인
+        assertThat(results.get(0).parkingSpotNumber()).isEqualTo("A-01"); // 자리 번호가 매핑되었는지 확인
+        assertThat(results.get(0).status()).isEqualTo(ReservationStatus.PENDING); // 상태 확인
     }
 
     @Test
