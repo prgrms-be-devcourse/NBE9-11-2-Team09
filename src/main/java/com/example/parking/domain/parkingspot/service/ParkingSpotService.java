@@ -4,10 +4,12 @@ import com.example.parking.domain.parking.entity.SpotStatus;
 import com.example.parking.domain.parkingspot.dto.ParkingSpotDto;
 import com.example.parking.domain.parkingspot.entity.ParkingSpot;
 import com.example.parking.domain.parkingspot.repository.ParkingSpotRepository;
+import com.example.parking.global.sse.SseEmitterManager;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 import java.util.List;
 
@@ -16,6 +18,7 @@ import java.util.List;
 public class ParkingSpotService {
 
   private final ParkingSpotRepository parkingSpotRepository;
+  private final SseEmitterManager sseEmitterManager;
 
   public List<ParkingSpotDto> findAvailableSpots(Long parkingLotId) {
     return parkingSpotRepository.findAll()
@@ -41,7 +44,17 @@ public class ParkingSpotService {
         .orElseThrow(() -> new EntityNotFoundException("자리를 찾을 수 없습니다."));
 
     spot.reserve();
+
+    sseEmitterManager.notify(
+        spot.getParkingLot().getId(),
+        new ParkingSpotDto(spot)
+    );
+
     return spot;
+  }
+
+  public SseEmitter subscribe(Long parkingLotId) {
+    return sseEmitterManager.subscribe(parkingLotId);
   }
 
 }
