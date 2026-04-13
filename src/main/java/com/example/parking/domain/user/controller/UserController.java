@@ -5,13 +5,12 @@ import com.example.parking.domain.user.dto.LoginResDto;
 import com.example.parking.domain.user.dto.SignupReqDto;
 import com.example.parking.domain.user.dto.UserProfileResDto;
 import com.example.parking.domain.user.service.UserService;
+import com.example.parking.global.security.CustomUserDetails;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.ExceptionHandler;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
 
@@ -31,6 +30,14 @@ public class UserController {
     @PostMapping("/api/users/login")
     public ResponseEntity<LoginResDto> login(@Valid @RequestBody LoginReqDto reqDto) {
         LoginResDto response = userService.login(reqDto);
+        return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/api/users/me")
+    public ResponseEntity<UserProfileResDto> getMyProfile(
+            @AuthenticationPrincipal CustomUserDetails userDetails
+    ) {
+        UserProfileResDto response = userService.getMyProfile(userDetails.getUserId());
         return ResponseEntity.ok(response);
     }
 

@@ -61,4 +61,14 @@ public class UserService {
         return new LoginResDto(accessToken, "Bearer");
     }
 
+    public UserProfileResDto getMyProfile(Long userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
+
+        if (user.getStatus() != UserStatus.ACTIVE) {
+            throw new IllegalArgumentException("탈퇴한 사용자는 조회할 수 없습니다.");
+        }
+
+        return UserProfileResDto.from(user);
+    }
 }
