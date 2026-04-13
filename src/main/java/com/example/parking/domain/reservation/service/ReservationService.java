@@ -1,7 +1,7 @@
     package com.example.parking.domain.reservation.service;
 
-    import com.example.parking.domain.parking.entity.ParkingLot;
-    import com.example.parking.domain.parking.repository.ParkingLotRepository;
+    import com.example.parking.domain.parkingLot.entity.ParkingLot;
+    import com.example.parking.domain.parkingLot.repository.ParkingLotRepository;
     import com.example.parking.domain.parkingspot.entity.ParkingSpot;
     import com.example.parking.domain.parkingspot.repository.ParkingSpotRepository;
     import com.example.parking.domain.reservation.dto.ReservationReqDto;
@@ -86,7 +86,7 @@
                     .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 주차장입니다."));
 
             // 3. 주차 자리 조회 (🔥비관적 락 획득)
-            ParkingSpot parkingSpot = parkingSpotRepository.findByIdWithPessimisticLock(reqDto.parkingSpotId())
+            ParkingSpot parkingSpot = parkingSpotRepository.findByIdWithLock(reqDto.parkingSpotId())
                     .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 주차 자리입니다."));
 
             // 4. 예약 시간 중복 검사
