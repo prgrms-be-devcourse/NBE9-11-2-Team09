@@ -30,3 +30,11 @@ spring:
   jwt:
     # 주의: 실제 배포할 땐 아주 길고 복잡한 무작위 문자열을 써야 합니다! (최소 256비트 이상)
     secret: my-super-secret-key-for-parking-project-do-not-share
+
+  profiles:
+    active: local
+
+# 5. 서울 주차장 Open API 키
+openapi:
+  seoul:
+    key: ${SEOUL_API_KEY}

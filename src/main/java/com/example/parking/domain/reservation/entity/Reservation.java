@@ -1,7 +1,7 @@
 package com.example.parking.domain.reservation.entity;
 
-import com.example.parking.domain.parking.entity.ParkingLot;
-import com.example.parking.domain.parkingspot.entity.ParkingSpot; // 패키지 경로 수정 완료
+import com.example.parking.domain.parkingLot.entity.ParkingLot;
+import com.example.parking.domain.parkingspot.entity.ParkingSpot;
 import com.example.parking.domain.user.entity.User;
 import jakarta.persistence.*;
 import lombok.*;
