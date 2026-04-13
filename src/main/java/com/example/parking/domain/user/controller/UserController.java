@@ -33,6 +33,7 @@ public class UserController {
         return ResponseEntity.ok(response);
     }
 
+    // [CUS-08] 로그인 - 내 정보 조회 - JWT로 인증된 현재 사용자의 회원 정보 조회
     @GetMapping("/api/users/me")
     public ResponseEntity<UserProfileResDto> getMyProfile(
             @AuthenticationPrincipal CustomUserDetails userDetails

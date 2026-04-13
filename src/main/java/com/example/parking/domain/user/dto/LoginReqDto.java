@@ -7,7 +7,7 @@ import lombok.NoArgsConstructor;
 
 @Getter
 @NoArgsConstructor
-// [CUS-08] 로그인 - 로그인 API 요청 DTO
+// [CUS-08] 로그인 - 로그인 요청에서 이메일과 비밀번호를 전달받는 DTO
 public class LoginReqDto {
 
     @NotBlank(message = "이메일은 필수입니다.")

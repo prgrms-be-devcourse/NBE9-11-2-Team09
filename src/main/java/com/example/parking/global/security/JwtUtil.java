@@ -22,6 +22,7 @@ public class JwtUtil {
         this.secretKey = Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8));
     }
 
+    // [CUS-08] 로그인 - 사용자 식별 정보와 권한을 담은 JWT access token 생성
     public String createAccessToken(User user) {
         Date now = new Date();
         Date expiration = new Date(now.getTime() + accessTokenExpirationMillis);

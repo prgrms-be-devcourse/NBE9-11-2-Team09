@@ -44,15 +44,17 @@ public class UserService {
         User savedUser = userRepository.save(user);
         return UserProfileResDto.from(savedUser);
     }
-    // [CUS-08] 로그인 - 로그인 요청을 받아 사용자 인증 후 JWT 토큰 발급
+    // [CUS-08] 로그인 - 로그인 요청을 받아 사용자 인증 후 JWT access token 발급
     public LoginResDto login(LoginReqDto reqDto) {
         User user = userRepository.findByEmail(reqDto.getUserEmail())
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 이메일입니다."));
 
+        // [CUS-08] 로그인 - 저장된 암호화 비밀번호와 입력 비밀번호 비교
         if (!passwordEncoder.matches(reqDto.getPassword(), user.getPassword())) {
             throw new IllegalArgumentException("비밀번호가 일치하지 않습니다.");
         }
 
+        // [CUS-08] 로그인 - ACTIVE 상태가 아닌 사용자는 로그인할 수 없다.
         if (user.getStatus() != UserStatus.ACTIVE) {
             throw new IllegalArgumentException("탈퇴한 사용자는 로그인할 수 없습니다.");
         }
