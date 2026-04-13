@@ -41,9 +41,9 @@ public class ReservationController {
     }
 
     // [CUS-04] 예약 취소
-    @PatchMapping("/{id}/cancel")
-    public ResponseEntity<RsData<Void>> cancel(@PathVariable Long id, @RequestParam Long userId) {
-        reservationService.cancelReservation(id, userId);
+    @PatchMapping("/{reservationId}/cancel")
+    public ResponseEntity<RsData<Void>> cancel(@PathVariable Long reservationId, @RequestParam Long userId) {
+        reservationService.cancelReservation(reservationId, userId);
         RsData<Void> rsData = new RsData<>("예약 취소가 완료되었습니다.", "200-3");
 
         return ResponseEntity.status(rsData.getStatusCode()).body(rsData);
