@@ -42,7 +42,5 @@ public class Payment {
         this.status = PaymentStatus.COMPLETE;
     }
 
-    public void refund() {
-        this.status = PaymentStatus.REFUND;
-    }
+
 }
