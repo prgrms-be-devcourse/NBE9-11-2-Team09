@@ -1,8 +1,8 @@
 package com.example.parking.global.initdata;
 
-import com.example.parking.domain.parking.entity.ParkingLot;
-import com.example.parking.domain.parking.entity.SpotType;
-import com.example.parking.domain.parking.repository.ParkingLotRepository;
+import com.example.parking.domain.parkingLot.entity.ParkingLot;
+import com.example.parking.domain.parkingLot.entity.SpotType;
+import com.example.parking.domain.parkingLot.repository.ParkingLotRepository;
 import com.example.parking.domain.parkingspot.entity.ParkingSpot;
 import com.example.parking.domain.parkingspot.repository.ParkingSpotRepository;
 import com.example.parking.domain.reservation.entity.Reservation;

@@ -1,8 +1,8 @@
 package com.example.parking.domain.parkingspot.dto;
 
 import com.example.parking.domain.parkingspot.entity.ParkingSpot;
-import com.example.parking.domain.parking.entity.SpotStatus;
-import com.example.parking.domain.parking.entity.SpotType;
+import com.example.parking.domain.parkingLot.entity.SpotStatus;
+import com.example.parking.domain.parkingLot.entity.SpotType;
 
 public record ParkingSpotDto(
     Long id,
