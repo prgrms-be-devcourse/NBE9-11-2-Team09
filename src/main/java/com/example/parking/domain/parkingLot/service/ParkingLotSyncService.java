@@ -7,6 +7,7 @@ import com.example.parking.domain.parkingLot.external.dto.ParkingApiItem;
 import com.example.parking.domain.parkingLot.external.dto.ParkingApiResDto;
 import com.example.parking.domain.parkingLot.repository.ParkingLotRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -28,6 +29,7 @@ public class ParkingLotSyncService {
     private final ParkingLotRepository parkingLotRepository;
 
     // [CUS-01] 외부 주차장 데이터를 우리 DB와 동기화
+    @CacheEvict(value = {"parkingLots", "parkingLot"}, allEntries = true)
     public void syncParkingLots() {
         ParkingApiResDto response = parkingOpenApiClient.fetchParkingLots();
 
