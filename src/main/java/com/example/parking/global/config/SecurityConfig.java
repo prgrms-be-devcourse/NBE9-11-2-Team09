@@ -31,6 +31,8 @@ public class SecurityConfig {
                         .requestMatchers("/swagger-ui/**", "/v3/api-docs/**", "/swagger-ui.html").permitAll()
                         .requestMatchers("/api/users/signup", "/api/users/login", "/h2-console/**").permitAll()
                         .requestMatchers("/api/reservations/**").permitAll()
+                        .requestMatchers("/api/payments/**").permitAll()        // 결제 api 허용
+                        .requestMatchers("/api/admin/payments/**").permitAll()
                         .anyRequest().authenticated()
                 );
 
