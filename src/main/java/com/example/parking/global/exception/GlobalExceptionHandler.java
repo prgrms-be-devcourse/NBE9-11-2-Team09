@@ -1,9 +1,35 @@
 package com.example.parking.global.exception;
 
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.ErrorResponse;
+import org.springframework.web.bind.annotation.ExceptionHandler;
 
-//@ControllerAdvice
+//@RestControllerAdvice
 public class GlobalExceptionHandler {
 
+//  // 존재하지 않는 예약, 금액 불일치
+//  @ExceptionHandler(IllegalArgumentException.class)
+//  public ResponseEntity<ErrorResponse> handleIllegalArgument(IllegalArgumentException e) {
+//    return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+//        .body(new ErrorResponse("BAD_REQUEST", e.getMessage()));
+//  }
+//
+//  // 중복 결제, 예약 상태 오류
+//  @ExceptionHandler(IllegalStateException.class)
+//  public ResponseEntity<ErrorResponse> handleIllegalState(IllegalStateException e) {
+//    return ResponseEntity.status(HttpStatus.CONFLICT)
+//        .body(new ErrorResponse("CONFLICT", e.getMessage()));
+//  }
+//
+// 본인 예약 아닐 때 (JWT 완성 후 활성화)
+// @ExceptionHandler(SecurityException.class)
+// public ResponseEntity<ErrorResponse> handleSecurity(SecurityException e) {
+//    return ResponseEntity.status(HttpStatus.FORBIDDEN)
+//            .body(new ErrorResponse("FORBIDDEN", e.getMessage()));
+// }
+//
+//
 //  @ExceptionHandler(NoSuchElementException.class)
 //  @ResponseBody
 //  public RsData<Void> handleException(){
@@ -54,5 +80,4 @@ public class GlobalExceptionHandler {
 //        "400-4"
 //    );
 //  }
-
 }

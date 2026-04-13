@@ -4,9 +4,9 @@ import com.example.parking.domain.payment.dto.PaymentAdminRespDto;
 import com.example.parking.domain.payment.dto.PaymentReqDto;
 import com.example.parking.domain.payment.dto.PaymentRespDto;
 import com.example.parking.domain.payment.entity.Payment;
+import com.example.parking.domain.payment.entity.PaymentStatus;
 import com.example.parking.domain.payment.repository.PaymentRepository;
 import com.example.parking.domain.reservation.entity.Reservation;
-import com.example.parking.domain.reservation.entity.ReservationStatus;
 import com.example.parking.domain.reservation.repository.ReservationRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -36,7 +36,10 @@ public class PaymentService {
         Reservation reservation = reservationRepository.findById(request.getReservationId())
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 예약입니다."));
 
-
+        // 본인 예약 확인
+        // if (!reservation.getUser().getId().equals(userId)) {
+        //     throw new SecurityException("본인의 예약만 결제할 수 있습니다.");
+        // }
 
         // 예약 상태 검증 - PENDING 상태만 결제 가능
         switch (reservation.getStatus()) {
@@ -91,6 +94,31 @@ public class PaymentService {
                 .stream()
                 .map(PaymentAdminRespDto::from)
                 .collect(Collectors.toList());
+    }
+
+    /**
+     * ADM-01: 환불 처리
+     * - 결제 존재 여부 확인
+     * - COMPLETE 상태만 환불 가능
+     * - 이미 환불된 결제 중복 환불 방지
+     */
+    @Transactional
+    public PaymentRespDto refundPayment(Long paymentId) {
+
+        Payment payment = paymentRepository.findById(paymentId)
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 결제입니다."));
+
+        if (payment.getStatus() == PaymentStatus.REFUND) {
+            throw new IllegalStateException("이미 환불된 결제입니다.");
+        }
+
+        if (payment.getStatus() != PaymentStatus.COMPLETE) {
+            throw new IllegalStateException("환불 가능한 상태가 아닙니다.");
+        }
+
+        payment.refund();
+
+        return PaymentRespDto.from(payment);
     }
 
     /**

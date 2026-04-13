@@ -48,4 +48,14 @@ public class PaymentController {
             @PathVariable Long userId) {
         return ResponseEntity.ok(paymentService.getPaymentsByUser(userId));
     }
+
+    /**
+     * ADM-01: 고객 예약 삭제 - 환불 처리
+     * 관리자가 특정 결제를 환불 처리한다.
+     */
+    @PatchMapping("/admin/payments/{paymentId}/refund")
+    public ResponseEntity<PaymentRespDto> refundPayment(
+            @PathVariable Long paymentId) {
+        return ResponseEntity.ok(paymentService.refundPayment(paymentId));
+    }
 }
