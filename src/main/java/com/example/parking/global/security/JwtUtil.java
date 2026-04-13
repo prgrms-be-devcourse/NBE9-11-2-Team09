@@ -1,6 +1,7 @@
 package com.example.parking.global.security;
 
 import com.example.parking.domain.user.entity.User;
+import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
 import org.springframework.beans.factory.annotation.Value;
@@ -34,5 +35,50 @@ public class JwtUtil {
                 .expiration(expiration)
                 .signWith(secretKey)
                 .compact();
+    }
+
+    // [CUS-08] 로그인 - JWT 토큰 검증 - 토큰의 유효성 검사 및 사용자 정보 추출
+    public boolean isValid(String token) {
+        try {
+            parseClaims(token);
+            return true;
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
+    // [CUS-08] 로그인 - JWT 토큰 검증 - 토큰에서 사용자 ID 추출
+    public Long getUserId(String token) {
+        Claims claims = parseClaims(token);
+        Object userId = claims.get("userId");
+
+        if (userId instanceof Integer integerUserId) {
+            return integerUserId.longValue();
+        }
+
+        if (userId instanceof Long longUserId) {
+            return longUserId;
+        }
+
+        return Long.valueOf(claims.getSubject());
+    }
+
+    // [CUS-08] 로그인 - JWT 토큰 검증 - 토큰에서 사용자 이메일 추출
+    public String getUserEmail(String token) {
+        return parseClaims(token).get("userEmail", String.class);
+    }
+
+    // [CUS-08] 로그인 - JWT 토큰 검증 - 토큰에서 사용자 역할 추출
+    public String getRole(String token) {
+        return parseClaims(token).get("role", String.class);
+    }
+
+    // [CUS-08] 로그인 - JWT 토큰 검증 - 토큰의 유효성 검사 및 사용자 정보 추출을 위한 공통 메서드
+    private Claims parseClaims(String token) {
+        return Jwts.parser()
+                .verifyWith(secretKey)
+                .build()
+                .parseSignedClaims(token)
+                .getPayload();
     }
 }

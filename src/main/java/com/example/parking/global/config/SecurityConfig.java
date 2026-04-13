@@ -1,5 +1,7 @@
 package com.example.parking.global.config;
 
+import com.example.parking.global.security.JwtFilter;
+import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -12,11 +14,16 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.header.writers.frameoptions.XFrameOptionsHeaderWriter;
 
 @Configuration
 @EnableWebSecurity
+@RequiredArgsConstructor
 public class SecurityConfig {
+
+    // [CUS-08] JWT 인증 - JwtFilter를 빈으로 주입하여 SecurityFilterChain에서 사용할 수 있도록 설정
+    private final JwtFilter jwtFilter;
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
@@ -32,7 +39,8 @@ public class SecurityConfig {
                         .requestMatchers("/api/users/signup", "/api/users/login", "/h2-console/**").permitAll()
                         .requestMatchers("/api/reservations/**").permitAll()
                         .anyRequest().authenticated()
-                );
+                )
+                .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class); // [CUS-08] JWT 인증 - JwtFilter를 UsernamePasswordAuthenticationFilter 앞에 추가하여 모든 요청에서 JWT 검증 수행
 
         return http.build();
     }
@@ -41,5 +49,4 @@ public class SecurityConfig {
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
-
 }
