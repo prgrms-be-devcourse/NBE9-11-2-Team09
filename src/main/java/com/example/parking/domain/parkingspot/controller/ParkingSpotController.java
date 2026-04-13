@@ -6,8 +6,10 @@ import com.example.parking.domain.parkingspot.service.ParkingSpotService;
 import com.example.parking.domain.user.entity.User;
 import com.example.parking.global.response.RsData;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 import java.util.List;
 
@@ -34,6 +36,12 @@ public class ParkingSpotController{
     List<ParkingSpotDto> spots = parkingSpotService.findAllSpots(parkingLotId);
 
     return spots;
+  }
+
+  @GetMapping(value = "/{parkingLotId}/subscribe",
+      produces = MediaType.TEXT_EVENT_STREAM_VALUE)
+  public SseEmitter subscribe(@PathVariable Long parkingLotId) {
+    return parkingSpotService.subscribe(parkingLotId);
   }
 
   record ParkingSpotResponseDto(
