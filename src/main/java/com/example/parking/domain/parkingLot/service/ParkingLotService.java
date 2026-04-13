@@ -17,12 +17,14 @@ public class ParkingLotService {
 
     private final ParkingLotRepository parkingLotRepository;
 
+    // [CUS-01] 전체 주차장 조회
     public List<ParkingLotResDto> findAll() {
         return parkingLotRepository.findAll().stream()
                 .map(ParkingLotResDto::from)
                 .toList();
     }
 
+    // [CUS-01] 특정 주차장 조회
     public ParkingLotResDto findById(Long id) {
         ParkingLot parkingLot = parkingLotRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("해당 주차장이 없습니다."));

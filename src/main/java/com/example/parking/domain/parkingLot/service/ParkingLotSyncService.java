@@ -27,6 +27,7 @@ public class ParkingLotSyncService {
     private final ParkingOpenApiClient parkingOpenApiClient;
     private final ParkingLotRepository parkingLotRepository;
 
+    // [CUS-01] 외부 주차장 데이터를 우리 DB와 동기화
     public void syncParkingLots() {
         ParkingApiResDto response = parkingOpenApiClient.fetchParkingLots();
 

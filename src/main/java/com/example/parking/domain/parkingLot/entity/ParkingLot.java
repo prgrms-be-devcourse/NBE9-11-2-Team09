@@ -62,7 +62,7 @@ public class ParkingLot {
         this.operationEndTime = operationEndTime;
     }
 
-    // 외부 API에서 받은 값을 사용해 ParkingLot 엔티티를 생성하는 정적 팩토리 메서드
+    // [CUS-01] 외부 API에서 받은 값을 사용해 ParkingLot 엔티티를 생성하는 정적 팩토리 메서드
     public static ParkingLot of(String externalId, String name, String address, Integer totalSpot) {
         return ParkingLot.builder()
                 .externalId(externalId)
@@ -75,6 +75,7 @@ public class ParkingLot {
                 .build();
     }
 
+    // [CUS-01] 외부 데이터 변경 시 업데이트
     public void updateInfo(String name, String address, Integer totalCapacity) {
         this.name = name;
         this.address = address;

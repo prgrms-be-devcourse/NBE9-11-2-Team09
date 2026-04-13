@@ -16,10 +16,10 @@ public class ParkingLotInitRunner implements ApplicationRunner {
     private final ParkingLotSyncService parkingLotSyncService;
     private final ParkingLotRepository parkingLotRepository;
 
+    // [CUS-01] 서버 시작 시 외부 주차장 데이터 동기화
+    // 데이터가 비어 있을 때만 초기 적재하도록 처리
     @Override
     public void run(ApplicationArguments args) {
-        // 서버 시작할 때마다 무조건 sync하면 중복/불필요 호출이 생길 수 있어서
-        // 데이터가 비어 있을 때만 초기 적재하도록 처리
         if (parkingLotRepository.count() == 0) {
             log.info("주차장 초기 데이터 동기화를 시작합니다.");
             parkingLotSyncService.syncParkingLots();

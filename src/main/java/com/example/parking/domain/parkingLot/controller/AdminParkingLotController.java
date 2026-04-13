@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 /*
-관리자용 주차장 데이터 동기화 API
+[CUS-01] 관리자용 주차장 데이터 동기화 API
  */
 //@RestController
 //@RequestMapping("/api/admin/parking-lots")
