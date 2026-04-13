@@ -19,6 +19,7 @@ public class UserController {
 
     private  final UserService userService;
 
+    // [CUS-06] 회원가입 - 회원가입 요청을 받아 사용자 정보 저장
     @PostMapping("/api/users/signup")
     public ResponseEntity<UserProfileResDto> signup(@Valid @RequestBody SignupReqDto reqDto) {
         UserProfileResDto response = userService.signup(reqDto);

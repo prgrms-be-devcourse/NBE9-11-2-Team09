@@ -29,6 +29,7 @@ public class UserService {
 
         User user = User.builder()
                 .email(reqDto.getUserEmail())
+                // [CUS-06] 회원가입 - 비밀번호는 저장 전에 BCrypt로 암호화
                 .password(passwordEncoder.encode(reqDto.getPassword()))
                 .name(reqDto.getName())
                 .plateNumber(reqDto.getPlateNumber())
