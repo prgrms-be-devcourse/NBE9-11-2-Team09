@@ -41,9 +41,5 @@ public interface ReservationRepository extends JpaRepository<Reservation, Long> 
             @Param("endTime") LocalDateTime endTime
     );
 
-    // 1. 30분 뒤 시작하는 특정 상태의 예약 찾기
-    List<Reservation> findByStartTimeAndStatus(LocalDateTime startTime, ReservationStatus status);
-
-    // 2. 특정 시간 이전에 생성되었고, 특정 상태(PENDING)인 예약 찾기
     List<Reservation> findByStatusAndCreatedAtBefore(ReservationStatus status, LocalDateTime time);
 }

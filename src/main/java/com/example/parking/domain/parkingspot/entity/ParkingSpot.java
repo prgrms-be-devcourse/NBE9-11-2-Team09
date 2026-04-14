@@ -70,5 +70,9 @@ public class ParkingSpot {
         this.reservedAt = null;
     }
 
+    public void updateStatus(SpotStatus status) {
+        this.status = status;
+    }
+
 
 }
