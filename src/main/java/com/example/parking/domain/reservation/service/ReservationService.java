@@ -99,10 +99,17 @@
                 throw new IllegalStateException("현재 다른 사용자가 결제 진행 중인 자리입니다. 잠시 후 다시 시도해주세요.");
             }
 
-            // 선택한 주차장의 ID와 실제 주차 자리가 속한 주차장의 ID가 일치하는지 검증합니다.
+            // 4. 선택한 주차장의 ID와 실제 주차 자리가 속한 주차장의 ID가 일치하는지 검증합니다.
             if (!parkingSpot.getParkingLot().getId().equals(reqDto.parkingLotId())) {
                 throw new IllegalArgumentException("선택하신 주차장(ID: " + reqDto.parkingLotId() +
                         ")에 해당 주차 자리(ID: " + reqDto.parkingSpotId() + ")가 존재하지 않습니다.");
+            }
+
+            // 4-1. 주차 자리와 내 차종이 서로 다를때의 방어로직.
+            if (!parkingSpot.getType().name().equals(user.getVehicleType().name())) {
+                throw new IllegalStateException("해당 자리는 " + parkingSpot.getType() +
+                        " 전용입니다. 고객님의 차종(" + user.getVehicleType() +
+                        ")은 이용할 수 없습니다.");
             }
 
             // 5. 예약 시간 중복 검사
