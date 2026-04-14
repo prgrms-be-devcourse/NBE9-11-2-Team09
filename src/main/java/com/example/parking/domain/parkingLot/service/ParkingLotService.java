@@ -18,11 +18,18 @@ public class ParkingLotService {
 
     private final ParkingLotRepository parkingLotRepository;
 
-    // [CUS-01] 전체 주차장 조회
-    @Cacheable(value = "parkingLots", key = "'all'")
-    public List<ParkingLotResDto> findAll() {
-        System.out.println("=== DB 조회 실행 ===");
-        return parkingLotRepository.findAll().stream()
+    // [CUS-01] 전체 주차장 조회, 동 검색
+    @Cacheable(value = "parkingLots", key = "#dong == null || #dong.isBlank() ? 'all' : #dong")
+    public List<ParkingLotResDto> findAll(String dong) {
+        List<ParkingLot> parkingLots;
+
+        if (dong == null || dong.isBlank()) {
+            parkingLots = parkingLotRepository.findAll();
+        } else {
+            parkingLots = parkingLotRepository.findByAddressContaining(dong);
+        }
+
+        return parkingLots.stream()
                 .map(ParkingLotResDto::from)
                 .toList();
     }
