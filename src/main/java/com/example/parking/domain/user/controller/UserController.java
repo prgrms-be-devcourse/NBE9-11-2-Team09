@@ -49,6 +49,29 @@ public class UserController {
         return ResponseEntity.ok(response);
     }
 
+    // [CUS-07] 회원 탈퇴 - JWT로 인증된 현재 사용자의 계정을 탈퇴 처리
+    @DeleteMapping("/api/users/me")
+    public ResponseEntity<Map<String, String>> withdraw(
+            @AuthenticationPrincipal CustomUserDetails userDetails,
+            @Valid @RequestBody WithdrawReqDto reqDto
+    ) {
+        userService.withdraw(userDetails.getUserId(), reqDto);
+        return ResponseEntity.ok(Map.of(
+                "message", "회원 탈퇴가 완료되었습니다."
+        ));
+    }
+
+    // 로그아웃 - JWT로 인증된 현재 사용자의 세션을 무효화하여 로그아웃 처리
+    @PostMapping("/api/users/logout")
+    public ResponseEntity<Map<String, String>> logout(
+            @AuthenticationPrincipal CustomUserDetails userDetails
+    ) {
+        userService.logout(userDetails.getUserId());
+        return ResponseEntity.ok(Map.of(
+                "message", "로그아웃이 완료되었습니다."
+        ));
+    }
+
     @ExceptionHandler(IllegalArgumentException.class)
     public ResponseEntity<Map<String, String>> handleIllegalArgumentException(IllegalArgumentException e) {
         return ResponseEntity.badRequest().body(Map.of(
