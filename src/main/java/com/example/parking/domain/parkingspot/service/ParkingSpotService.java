@@ -13,7 +13,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
-import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -58,25 +57,6 @@ public class ParkingSpotService {
 
   public SseEmitter subscribe(Long parkingLotId) {
     return sseEmitterManager.subscribe(parkingLotId);
-  }
-
-  @Transactional
-  public void createSpots(ParkingLot parkingLot, int totalSpot) {
-    List<ParkingSpot> spots = new ArrayList<>();
-    int smallCount    = (int) (totalSpot * 0.8);  // 80%
-    int largeCount    = (int) (totalSpot * 0.1);  // 10%
-
-
-    for (int i = 1; i <= smallCount; i++) {
-      spots.add(ParkingSpot.create(parkingLot, String.valueOf(i), SpotType.SMALL));
-    }
-    for (int i = smallCount + 1; i <= smallCount + largeCount; i++) {
-      spots.add(ParkingSpot.create(parkingLot, String.valueOf(i), SpotType.LARGE));
-    }
-    for (int i = smallCount + largeCount + 1; i <= totalSpot; i++) {
-      spots.add(ParkingSpot.create(parkingLot, String.valueOf(i), SpotType.ELECTRIC));
-    }
-    parkingSpotRepository.saveAll(spots);
   }
 
 }

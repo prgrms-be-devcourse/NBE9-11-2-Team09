@@ -1,9 +1,6 @@
 package com.example.parking.domain.user.controller;
 
-import com.example.parking.domain.user.dto.LoginReqDto;
-import com.example.parking.domain.user.dto.LoginResDto;
-import com.example.parking.domain.user.dto.SignupReqDto;
-import com.example.parking.domain.user.dto.UserProfileResDto;
+import com.example.parking.domain.user.dto.*;
 import com.example.parking.domain.user.service.UserService;
 import com.example.parking.global.security.CustomUserDetails;
 import jakarta.validation.Valid;
@@ -39,6 +36,16 @@ public class UserController {
             @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
         UserProfileResDto response = userService.getMyProfile(userDetails.getUserId());
+        return ResponseEntity.ok(response);
+    }
+
+    // [CUS-10] 차량 정보 수정 - JWT로 인증된 현재 사용자의 차량 정보 업데이트
+    @PatchMapping("/api/users/me/vehicle")
+    public ResponseEntity<UserProfileResDto> updateMyVehicle(
+            @AuthenticationPrincipal CustomUserDetails userDetails,
+            @Valid @RequestBody VehicleUpdateReqDto reqDto
+    ) {
+        UserProfileResDto response = userService.updateMyVehicle(userDetails.getUserId(), reqDto);
         return ResponseEntity.ok(response);
     }
 
