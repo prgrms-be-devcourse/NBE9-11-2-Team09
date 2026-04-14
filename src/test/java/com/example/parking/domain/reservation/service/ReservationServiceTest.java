@@ -2,7 +2,7 @@ package com.example.parking.domain.reservation.service;
 
 import com.example.parking.domain.parkingLot.entity.ParkingLot;
 import com.example.parking.domain.parkingspot.entity.ParkingSpot;
-import com.example.parking.domain.parkingLot.entity.SpotType;
+import com.example.parking.domain.parkingspot.entity.SpotType;
 import com.example.parking.domain.parkingLot.repository.ParkingLotRepository;
 import com.example.parking.domain.parkingspot.repository.ParkingSpotRepository;
 import com.example.parking.domain.reservation.dto.ReservationResDto;

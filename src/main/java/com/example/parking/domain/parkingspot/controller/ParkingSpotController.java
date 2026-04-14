@@ -1,6 +1,7 @@
 package com.example.parking.domain.parkingspot.controller;
 
 import com.example.parking.domain.parkingspot.dto.ParkingSpotDto;
+import com.example.parking.domain.parkingspot.dto.ParkingSpotResponseDto;
 import com.example.parking.domain.parkingspot.entity.ParkingSpot;
 import com.example.parking.domain.parkingspot.service.ParkingSpotService;
 import com.example.parking.global.response.RsData;
@@ -18,7 +19,7 @@ public class ParkingSpotController{
   private final ParkingSpotService parkingSpotService;
 //  private final Rq rq;
 
-  // 주차장별 예약 가능한 자리 조회
+  // [CUS-02] 주차장별 예약 가능한 자리 조회
   @GetMapping("/{parkingLotId}/spots/available")
   public List<ParkingSpotDto> getAvailableSpots(
       @PathVariable Long parkingLotId) {
@@ -27,7 +28,7 @@ public class ParkingSpotController{
     return spots;
   }
 
-  // 주차장별 전체 자리 조회
+  // [CUS-02] 주차장별 전체 자리 조회
   @GetMapping("/{parkingLotId}/spots")
   public List<ParkingSpotDto> getAllSpots(
       @PathVariable Long parkingLotId){
@@ -36,19 +37,17 @@ public class ParkingSpotController{
     return spots;
   }
 
+
+
+ //[CUS-11] 자리 점유시 주차장 내 모든 인원에게 전파
   @GetMapping(value = "/{parkingLotId}/subscribe",
       produces = MediaType.TEXT_EVENT_STREAM_VALUE)
   public SseEmitter subscribe(@PathVariable Long parkingLotId) {
     return parkingSpotService.subscribe(parkingLotId);
   }
 
-  record ParkingSpotResponseDto(
-      ParkingSpotDto parkingSpotDto
-  ) {
-  }
 
-
-  //자리 점유. 예약 아님
+  //[CUS-11] 자리 점유. 예약 아님
   @PostMapping("/{spotId}/reserve")
   public RsData<ParkingSpotResponseDto> reserve(
       @PathVariable Long spotId

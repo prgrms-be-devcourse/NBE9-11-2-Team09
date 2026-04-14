@@ -1,8 +1,8 @@
 package com.example.parking.domain.parkingspot.service;
 
 import com.example.parking.domain.parkingLot.entity.ParkingLot;
-import com.example.parking.domain.parkingLot.entity.SpotStatus;
-import com.example.parking.domain.parkingLot.entity.SpotType;
+import com.example.parking.domain.parkingspot.entity.SpotStatus;
+import com.example.parking.domain.parkingspot.entity.SpotType;
 import com.example.parking.domain.parkingspot.dto.ParkingSpotDto;
 import com.example.parking.domain.parkingspot.entity.ParkingSpot;
 import com.example.parking.domain.parkingspot.repository.ParkingSpotRepository;
@@ -40,7 +40,7 @@ public class ParkingSpotService {
         .toList();
 
   }
-
+  //[CUS-02] 주차장 자리 점유
   @Transactional
   public ParkingSpot reserve(Long spotId) {
     ParkingSpot spot = parkingSpotRepository.findByIdWithLock(spotId)
@@ -60,6 +60,7 @@ public class ParkingSpotService {
     return sseEmitterManager.subscribe(parkingLotId);
   }
 
+  // [CUS-11] 주차장별 자리 생성. 각각의 비율에 맞게 SpotType 분배
   @Transactional
   public void createSpots(ParkingLot parkingLot, int totalSpot) {
     List<ParkingSpot> spots = new ArrayList<>();
