@@ -1,5 +1,6 @@
 package com.example.parking.domain.user.controller;
 
+import com.example.parking.domain.admin.user.dto.AdminUserResDto;
 import com.example.parking.domain.user.dto.*;
 import com.example.parking.domain.user.service.UserService;
 import com.example.parking.global.security.CustomUserDetails;
@@ -48,16 +49,6 @@ public class UserController {
             @Valid @RequestBody VehicleUpdateReqDto reqDto
     ) {
         UserProfileResDto response = userService.updateMyVehicle(userDetails.getUserId(), reqDto);
-        return ResponseEntity.ok(response);
-    }
-
-    // [ADM-05] 관리자 화면에서 전체 고객 목록 페이징 조회 - 이름 또는 이메일 키워드로 검색 가능
-    @GetMapping("/api/admin/users")
-    public ResponseEntity<Page<AdminUserResDto>> getAdminUsers(
-            @RequestParam(required = false) String keyword,
-            Pageable pageable
-    ) {
-        Page<AdminUserResDto> response = userService.getAdminUsers(keyword, pageable);
         return ResponseEntity.ok(response);
     }
 

@@ -1,4 +1,4 @@
-package com.example.parking.domain.user.dto;
+package com.example.parking.domain.admin.user.dto;
 
 import com.example.parking.domain.user.entity.User;
 import com.example.parking.domain.user.entity.UserRole;
