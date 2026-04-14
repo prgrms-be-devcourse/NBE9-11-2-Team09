@@ -1,8 +1,6 @@
 package com.example.parking.domain.parkingspot.entity;
 
 import com.example.parking.domain.parkingLot.entity.ParkingLot;
-import com.example.parking.domain.parkingLot.entity.SpotStatus;
-import com.example.parking.domain.parkingLot.entity.SpotType;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -18,7 +16,7 @@ public class ParkingSpot {
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "parking_lot_id", nullable = false)
+    @   JoinColumn(name = "parking_lot_id", nullable = false)
     private ParkingLot parkingLot;
 
     @Enumerated(EnumType.STRING)

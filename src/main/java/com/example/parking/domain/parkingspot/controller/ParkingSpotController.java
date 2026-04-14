@@ -1,6 +1,7 @@
 package com.example.parking.domain.parkingspot.controller;
 
 import com.example.parking.domain.parkingspot.dto.ParkingSpotDto;
+import com.example.parking.domain.parkingspot.dto.ParkingSpotResponseDto;
 import com.example.parking.domain.parkingspot.entity.ParkingSpot;
 import com.example.parking.domain.parkingspot.service.ParkingSpotService;
 import com.example.parking.global.response.RsData;
@@ -42,10 +43,6 @@ public class ParkingSpotController{
     return parkingSpotService.subscribe(parkingLotId);
   }
 
-  record ParkingSpotResponseDto(
-      ParkingSpotDto parkingSpotDto
-  ) {
-  }
 
 
   //자리 점유. 예약 아님

@@ -1,9 +1,9 @@
 package com.example.parking.domain.reservation.service;
 
-import com.example.parking.domain.parking.entity.ParkingLot;
+import com.example.parking.domain.parkingLot.entity.ParkingLot;
 import com.example.parking.domain.parkingspot.entity.ParkingSpot;
-import com.example.parking.domain.parking.entity.SpotType;
-import com.example.parking.domain.parking.repository.ParkingLotRepository;
+import com.example.parking.domain.parkingLot.entity.SpotType;
+import com.example.parking.domain.parkingLot.repository.ParkingLotRepository;
 import com.example.parking.domain.parkingspot.repository.ParkingSpotRepository;
 import com.example.parking.domain.reservation.dto.ReservationResDto;
 import com.example.parking.domain.reservation.entity.Reservation;
@@ -93,13 +93,13 @@ class ReservationServiceTest {
         // given (주어진 상황: setUp에서 이미 가짜 데이터 1건이 세팅됨)
 
         // when (실행: 재현님이 작성한 서비스 로직을 호출한다)
-        List<ReservationResDto> results = reservationService.getMyReservations(savedUser.getId());
+        List<ReservationResDto> results = reservationService.getMyReservations(savedUser.getId(), null);
 
         // then (검증: 결과가 내 예상과 똑같은지 확인한다)
         assertThat(results).hasSize(1); // 1건이 나와야 함
-        assertThat(results.get(0).getParkingLotName()).isEqualTo("강남역 공영 주차장"); // 주차장 이름이 매핑되었는지 확인
-        assertThat(results.get(0).getParkingSpotNumber()).isEqualTo("A-01"); // 자리 번호가 매핑되었는지 확인
-        assertThat(results.get(0).getStatus()).isEqualTo(ReservationStatus.PENDING); // 상태 확인
+        assertThat(results.get(0).parkingLotName()).isEqualTo("강남역 공영 주차장"); // 주차장 이름이 매핑되었는지 확인
+        assertThat(results.get(0).parkingSpotNumber()).isEqualTo("A-01"); // 자리 번호가 매핑되었는지 확인
+        assertThat(results.get(0).status()).isEqualTo(ReservationStatus.PENDING); // 상태 확인
     }
 
     @Test
