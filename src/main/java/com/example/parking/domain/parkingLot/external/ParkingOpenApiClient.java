@@ -1,6 +1,6 @@
 package com.example.parking.domain.parkingLot.external;
 
-import com.example.parking.domain.parkingLot.external.dto.ParkingApiResDto;
+import com.example.parking.domain.parkingLot.external.dto.ParkingApiDto;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClient;
@@ -20,12 +20,12 @@ public class ParkingOpenApiClient {
     }
 
     // [CUS-01] 외부 API를 호출하여 강남구 주차장 데이터를 조회
-    public ParkingApiResDto fetchParkingLots() {
+    public ParkingApiDto.Response fetchParkingLots() {
         return restClient.get()
                 // API 경로 설정 (인증키, 시작/끝 범위, 지역명 포함)
                 .uri("/{apiKey}/json/GetParkInfo/1/100/강남", apiKey)
                 .retrieve()
-                // 응답 JSON을 ParkingApiResDto로 변환
-                .body(ParkingApiResDto.class);
+                // 응답 JSON을 ParkingApiDto로 변환
+                .body(ParkingApiDto.Response.class);
     }
 }

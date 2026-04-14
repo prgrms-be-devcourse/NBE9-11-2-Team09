@@ -2,9 +2,7 @@ package com.example.parking.domain.parkingLot.service;
 
 import com.example.parking.domain.parkingLot.entity.ParkingLot;
 import com.example.parking.domain.parkingLot.external.ParkingOpenApiClient;
-import com.example.parking.domain.parkingLot.external.dto.GetParkInfo;
-import com.example.parking.domain.parkingLot.external.dto.ParkingApiItem;
-import com.example.parking.domain.parkingLot.external.dto.ParkingApiResDto;
+import com.example.parking.domain.parkingLot.external.dto.ParkingApiDto;
 import com.example.parking.domain.parkingLot.repository.ParkingLotRepository;
 import com.example.parking.domain.parkingspot.service.ParkingSpotService;
 import lombok.RequiredArgsConstructor;
@@ -33,19 +31,10 @@ public class ParkingLotSyncService {
     // [CUS-01] 외부 주차장 데이터를 우리 DB와 동기화
     @CacheEvict(value = {"parkingLots", "parkingLot"}, allEntries = true)
     public void syncParkingLots() {
-        ParkingApiResDto response = parkingOpenApiClient.fetchParkingLots();
+        ParkingApiDto.Response response = parkingOpenApiClient.fetchParkingLots();
+        ParkingApiDto.ParkInfo parkInfo = response.parkInfo();
 
-        if (response == null || response.getParkInfo() == null) {
-            return;
-        }
-
-        GetParkInfo parkInfo = response.getParkInfo();
-
-        if (parkInfo.row() == null || parkInfo.row().isEmpty()) {
-            return;
-        }
-
-        for (ParkingApiItem item : parkInfo.row()) {
+        for (ParkingApiDto.ParkingLotItem item : parkInfo.items()) {
             String externalId = item.pkltCd();
 
             if (externalId == null || externalId.isBlank()) {
@@ -59,15 +48,15 @@ public class ParkingLotSyncService {
             parkingLotRepository.findByExternalId(externalId)
                     .ifPresentOrElse(
                             parkingLot -> parkingLot.updateInfo(name, address, totalSpot),
-                        () -> {
-                            ParkingLot saved = parkingLotRepository.save(
-                                ParkingLot.of(externalId, name, address, totalSpot)
-                            );
-                            // 신규 주차장일 때만 자리 생성
-                            if (totalSpot != null && totalSpot > 0) {
-                                parkingSpotService.createSpots(saved, totalSpot);
+                            () -> {
+                                ParkingLot saved = parkingLotRepository.save(
+                                        ParkingLot.of(externalId, name, address, totalSpot)
+                                );
+                                // 신규 주차장일 때만 자리 생성
+                                if (totalSpot != null && totalSpot > 0) {
+                                    parkingSpotService.createSpots(saved, totalSpot);
+                                }
                             }
-                        }
                     );
         }
     }
