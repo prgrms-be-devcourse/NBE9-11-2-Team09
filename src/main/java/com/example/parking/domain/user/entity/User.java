@@ -64,4 +64,9 @@ public class User {
         this.plateNumber = plateNumber;
         this.vehicleType = vehicleType;
     }
+
+    // [CUS 07] 회원 탈퇴 시 사용자 상태를 WITHDRAW로 변경하는 메서드
+    public void withdraw() {
+        this.status = UserStatus.WITHDRAW;
+    }
 }

@@ -2,10 +2,17 @@ package com.example.parking.domain.parkingspot.entity;
 
 import com.example.parking.domain.parkingLot.entity.ParkingLot;
 import jakarta.persistence.*;
-import lombok.*;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+
+import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "parking_spots")
+//@Table(name = "parking_spot", indexes = {
+//    @Index(name = "idx_parking_lot_status", columnList = "parking_lot_id, parking_spot_status")
+//})
+@Table(name = "parking_spot")
 @Getter
 @NoArgsConstructor
 public class ParkingSpot {
@@ -30,6 +37,9 @@ public class ParkingSpot {
     @Column(name = "parking_spot_number", nullable = false, length = 50)
     private String number;
 
+    @Column(name = "reserved_at")
+    private LocalDateTime reservedAt;
+
     @Builder
     public ParkingSpot(ParkingLot parkingLot, String number, SpotType type) {
         this.parkingLot = parkingLot;
@@ -52,5 +62,13 @@ public class ParkingSpot {
             throw new IllegalStateException("이미 점유된 자리입니다.");
         }
         this.status = SpotStatus.OCCUPIED;
+        this.reservedAt = LocalDateTime.now();
     }
+
+    public void release() {
+        this.status = SpotStatus.AVAILABLE;
+        this.reservedAt = null;
+    }
+
+
 }

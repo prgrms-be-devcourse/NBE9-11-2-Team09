@@ -90,4 +90,31 @@ public class UserService {
         return UserProfileResDto.from(user);
     }
 
+    // [CUS 07] 회원탈퇴 - 인증된 사용자의 비밀번호를 다시 확인한 뒤 soft delete 처리
+    @Transactional
+    public void withdraw(Long userId, WithdrawReqDto reqDto) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
+
+        if (user.getStatus() != UserStatus.ACTIVE) {
+            throw new IllegalArgumentException("이미 탈퇴한 사용자입니다.");
+        }
+
+        if (!passwordEncoder.matches(reqDto.getPassword(), user.getPassword())) {
+            throw new IllegalArgumentException("비밀번호가 일치하지 않습니다.");
+        }
+
+        user.withdraw();
+    }
+
+    // 로그아웃 - 클라이언트가 access token을 삭제하는 방식으로 로그아웃 처리 (서버에서는 별도의 상태 관리 없이 JWT의 유효성 검증으로 처리)
+    public void logout(Long userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
+
+        if (user.getStatus() != UserStatus.ACTIVE) {
+            throw new IllegalArgumentException("탈퇴한 사용자는 로그아웃할 수 없습니다.");
+        }
+    }
+
 }
