@@ -79,4 +79,6 @@ public class ParkingSpotService {
     return sseEmitterManager.subscribe(parkingLotId);
   }
 
+  public void createSpots(ParkingLot saved, Integer totalSpot) {
+  }
 }

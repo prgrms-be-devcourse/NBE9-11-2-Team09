@@ -31,6 +31,8 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/swagger-ui/**", "/v3/api-docs/**", "/swagger-ui.html").permitAll()
                         .requestMatchers("/api/users/signup", "/api/users/login", "/h2-console/**").permitAll()
+                                .requestMatchers("/api/admin/**").hasRole("ADMIN")
+//                        .requestMatchers("/api/reservations/**").permitAll()
                         // [CUS-05] 결제 - 고객만 결제 가능
                         .requestMatchers("/api/payments/**").hasRole("USER")
                         // [ADM-03, ADM-04, ADM-01] 관리자 결제 조회 및 환불 - 관리자만 접근 가능
