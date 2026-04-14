@@ -1,7 +1,7 @@
     package com.example.parking.domain.reservation.service;
 
-    import com.example.parking.domain.parking.entity.ParkingLot;
-    import com.example.parking.domain.parking.repository.ParkingLotRepository;
+    import com.example.parking.domain.parkingLot.entity.ParkingLot;
+    import com.example.parking.domain.parkingLot.repository.ParkingLotRepository;
     import com.example.parking.domain.parkingspot.entity.ParkingSpot;
     import com.example.parking.domain.parkingspot.repository.ParkingSpotRepository;
     import com.example.parking.domain.reservation.dto.ReservationReqDto;
@@ -49,8 +49,8 @@
         // [CUS-04] 예약 관리 - 예약 취소
         @Transactional
         public void cancelReservation(Long reservationId, Long userId) {
-            Reservation reservation = reservationRepository.findById(reservationId)
-                    .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 예약입니다."));
+            Reservation reservation = reservationRepository.findByIdAndUserIdWithDetails(reservationId, userId)
+                    .orElseThrow(() -> new IllegalArgumentException("존재하지 않거나 이미 취소된 예약입니다."));
 
             // 1. 이미 취소된 예약인지 확인 (소프트 델리트 중복 방지)
             if (reservation.getStatus() == ReservationStatus.CANCELED ) {
@@ -86,8 +86,14 @@
                     .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 주차장입니다."));
 
             // 3. 주차 자리 조회 (🔥비관적 락 획득)
-            ParkingSpot parkingSpot = parkingSpotRepository.findByIdWithPessimisticLock(reqDto.parkingSpotId())
+            ParkingSpot parkingSpot = parkingSpotRepository.findByIdWithLock(reqDto.parkingSpotId())
                     .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 주차 자리입니다."));
+
+            // 선택한 주차장의 ID와 실제 주차 자리가 속한 주차장의 ID가 일치하는지 검증합니다.
+            if (!parkingSpot.getParkingLot().getId().equals(reqDto.parkingLotId())) {
+                throw new IllegalArgumentException("선택하신 주차장(ID: " + reqDto.parkingLotId() +
+                        ")에 해당 주차 자리(ID: " + reqDto.parkingSpotId() + ")가 존재하지 않습니다.");
+            }
 
             // 4. 예약 시간 중복 검사
             // 핵심: 취소된 예약(CANCELLED)은 중복 카운트에서 제외하도록 Repository 쿼리가 수정되어야 합니다.
