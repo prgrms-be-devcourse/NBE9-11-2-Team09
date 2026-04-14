@@ -15,14 +15,16 @@ public interface ReservationRepository extends JpaRepository<Reservation, Long> 
     // [CUS-04] 예약 관리 - 내 예약 목록 조회 (N+1 문제 방지 Fetch Join)
     @Query("SELECT r FROM Reservation r JOIN FETCH r.parkingLot JOIN FETCH r.parkingSpot " +
             "WHERE r.user.id = :userId " +
-            "AND (:status IS NULL OR r.status = :status)") // 🔥 상태 조건 동적 처리
+            "AND (:status IS NULL OR r.status = :status)")
+    // 🔥 상태 조건 동적 처리
     List<Reservation> findAllByUserIdWithDetails(
             @Param("userId") Long userId,
             @Param("status") ReservationStatus status);
 
     // [CUS-04] 예약 관리 - 특정 예약 상세 조회 (N+1 문제 방지 Fetch Join)
     @Query("SELECT r FROM Reservation r JOIN FETCH r.parkingLot JOIN FETCH r.parkingSpot " +
-            "WHERE r.id = :reservationId AND r.user.id = :userId") // 🔥 status 조건 제거
+            "WHERE r.id = :reservationId AND r.user.id = :userId")
+    // 🔥 status 조건 제거
     Optional<Reservation> findByIdAndUserIdWithDetails(
             @Param("reservationId") Long reservationId,
             @Param("userId") Long userId);
@@ -38,4 +40,10 @@ public interface ReservationRepository extends JpaRepository<Reservation, Long> 
             @Param("startTime") LocalDateTime startTime,
             @Param("endTime") LocalDateTime endTime
     );
+
+    // 1. 30분 뒤 시작하는 특정 상태의 예약 찾기
+    List<Reservation> findByStartTimeAndStatus(LocalDateTime startTime, ReservationStatus status);
+
+    // 2. 특정 시간 이전에 생성되었고, 특정 상태(PENDING)인 예약 찾기
+    List<Reservation> findByStatusAndCreatedAtBefore(ReservationStatus status, LocalDateTime time);
 }
