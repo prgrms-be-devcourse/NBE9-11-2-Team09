@@ -5,7 +5,11 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import java.util.Optional;
 
 public interface UserRepository extends JpaRepository<User, Long> {
-    // 회원가입 시 이메일/차량번호 중복 검사
+
+    // [CUS-06] 회원가입 - 회원가입 시 이메일/차량번호 중복 검사
     boolean existsByEmail(String email);
     boolean existsByPlateNumber(String plateNumber);
+
+    // [CUS-08] 로그인 - 로그인 시 이메일로 사용자 조회
+    Optional<User> findByEmail(String email);
 }
