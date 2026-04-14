@@ -1,9 +1,6 @@
 package com.example.parking.domain.user.service;
 
-import com.example.parking.domain.user.dto.LoginReqDto;
-import com.example.parking.domain.user.dto.LoginResDto;
-import com.example.parking.domain.user.dto.SignupReqDto;
-import com.example.parking.domain.user.dto.UserProfileResDto;
+import com.example.parking.domain.user.dto.*;
 import com.example.parking.domain.user.entity.User;
 import com.example.parking.domain.user.entity.UserStatus;
 import com.example.parking.domain.user.repository.UserRepository;
@@ -73,4 +70,24 @@ public class UserService {
 
         return UserProfileResDto.from(user);
     }
+
+    // [CUS-10] 내 차량 정보 수정 - JWT로 인증된 현재 사용자의 차량 번호와 차량 종류 수정
+    @Transactional
+    public UserProfileResDto updateMyVehicle(Long userId, VehicleUpdateReqDto reqDto) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
+
+        if (user.getStatus() != UserStatus.ACTIVE) {
+            throw new IllegalArgumentException("탈퇴한 사용자는 수정할 수 없습니다.");
+        }
+
+        if (userRepository.existsByPlateNumberAndIdNot(reqDto.getPlateNumber(), userId)) {
+            throw new IllegalArgumentException("이미 등록된 차량 번호입니다.");
+        }
+
+        user.updateVehicleInfo(reqDto.getPlateNumber(), reqDto.getVehicleType());
+
+        return UserProfileResDto.from(user);
+    }
+
 }

@@ -58,4 +58,10 @@ public class User {
         this.role = role != null ? role : UserRole.USER; // 기본값 처리
         this.status = UserStatus.ACTIVE; // 기본값 처리
     }
+
+    // [CUS-10] 차량 정보 수정 - 차량 번호와 차량 종류를 수정하는 메서드
+    public void updateVehicleInfo(String plateNumber, VehicleType vehicleType) {
+        this.plateNumber = plateNumber;
+        this.vehicleType = vehicleType;
+    }
 }
