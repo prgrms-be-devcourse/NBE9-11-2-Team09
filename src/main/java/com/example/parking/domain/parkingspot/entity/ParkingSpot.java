@@ -16,7 +16,7 @@ public class ParkingSpot {
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "parking_lot_id", nullable = false)
+    @   JoinColumn(name = "parking_lot_id", nullable = false)
     private ParkingLot parkingLot;
 
     @Enumerated(EnumType.STRING)
@@ -36,6 +36,15 @@ public class ParkingSpot {
         this.number = number;
         this.type = type;
         this.status = SpotStatus.AVAILABLE;
+    }
+
+    public static ParkingSpot create(ParkingLot parkingLot, String number, SpotType type) {
+        ParkingSpot spot = new ParkingSpot();
+        spot.parkingLot = parkingLot;
+        spot.number = number;
+        spot.type = type;
+        spot.status = SpotStatus.AVAILABLE; // 강제 고정
+        return spot;
     }
 
     public void reserve() {

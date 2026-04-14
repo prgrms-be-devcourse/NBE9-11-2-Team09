@@ -56,7 +56,7 @@ public class ParkingSpotController{
     ParkingSpot parkingSpot = parkingSpotService.reserve(spotId);
 
     return new RsData<>(
-        "%d번 자리 예약이 성공했습니다.".formatted(parkingSpot.getId()),
+        "%d번 자리 점유를 성공했습니다".formatted(parkingSpot.getId()),
         "201-1",
         new ParkingSpotResponseDto(
             new ParkingSpotDto(parkingSpot)

@@ -45,7 +45,11 @@ dependencies {
     testCompileOnly 'org.projectlombok:lombok'
     testAnnotationProcessor 'org.projectlombok:lombok'
     implementation 'org.springframework.boot:spring-boot-h2console'
+
+    // 6. 스프링 캐시
+    implementation("org.springframework.boot:spring-boot-starter-cache")
 }
+
 
 tasks.named('test') {
     useJUnitPlatform()
