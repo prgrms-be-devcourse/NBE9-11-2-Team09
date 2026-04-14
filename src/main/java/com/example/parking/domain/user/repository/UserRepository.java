@@ -12,4 +12,7 @@ public interface UserRepository extends JpaRepository<User, Long> {
 
     // [CUS-08] 로그인 - 로그인 시 이메일로 사용자 조회
     Optional<User> findByEmail(String email);
+
+    // [CUS-10] 차량 정보 수정 - 본인을 제외한 다른 사용자가 같은 차량번호를 사용하는지 확인
+    boolean existsByPlateNumberAndIdNot(String plateNumber, Long id);
 }
