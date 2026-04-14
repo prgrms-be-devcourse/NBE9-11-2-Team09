@@ -42,6 +42,25 @@ public class ParkingSpotService {
   }
 
   @Transactional
+  public void createSpots(ParkingLot parkingLot, int totalSpot) {
+    List<ParkingSpot> spots = new ArrayList<>();
+    int smallCount    = (int) (totalSpot * 0.8);  // 80%
+    int largeCount    = (int) (totalSpot * 0.1);  // 10%
+
+
+    for (int i = 1; i <= smallCount; i++) {
+      spots.add(ParkingSpot.create(parkingLot, String.valueOf(i), SpotType.SMALL));
+    }
+    for (int i = smallCount + 1; i <= smallCount + largeCount; i++) {
+      spots.add(ParkingSpot.create(parkingLot, String.valueOf(i), SpotType.LARGE));
+    }
+    for (int i = smallCount + largeCount + 1; i <= totalSpot; i++) {
+      spots.add(ParkingSpot.create(parkingLot, String.valueOf(i), SpotType.ELECTRIC));
+    }
+    parkingSpotRepository.saveAll(spots);
+  }
+
+  @Transactional
   public ParkingSpot reserve(Long spotId) {
     ParkingSpot spot = parkingSpotRepository.findByIdWithLock(spotId)
         .orElseThrow(() -> new EntityNotFoundException("자리를 찾을 수 없습니다."));
