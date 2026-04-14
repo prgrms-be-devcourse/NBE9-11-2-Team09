@@ -3,10 +3,7 @@ package com.example.parking.domain.parkingLot.controller;
 import com.example.parking.domain.parkingLot.dto.ParkingLotResDto;
 import com.example.parking.domain.parkingLot.service.ParkingLotService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -18,8 +15,9 @@ public class ParkingLotController {
     private final ParkingLotService parkingLotService;
 
     @GetMapping
-    public List<ParkingLotResDto> getParkingLots() {
-        return parkingLotService.findAll();
+    public List<ParkingLotResDto> getParkingLots(
+            @RequestParam(required = false) String dong) {
+        return parkingLotService.findAll(dong);
     }
 
     @GetMapping("/{id}")
