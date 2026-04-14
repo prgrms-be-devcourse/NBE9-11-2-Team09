@@ -1,5 +1,6 @@
 package com.example.parking.domain.user.service;
 
+import com.example.parking.domain.admin.user.dto.AdminUserResDto;
 import com.example.parking.domain.user.dto.*;
 import com.example.parking.domain.user.entity.User;
 import com.example.parking.domain.user.entity.UserStatus;

@@ -1,5 +1,6 @@
 package com.example.parking.domain.user.controller;
 
+import com.example.parking.domain.admin.user.dto.AdminUserResDto;
 import com.example.parking.domain.user.dto.*;
 import com.example.parking.domain.user.service.UserService;
 import com.example.parking.global.security.CustomUserDetails;
