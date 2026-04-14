@@ -6,6 +6,8 @@ import com.example.parking.domain.user.entity.UserStatus;
 import com.example.parking.domain.user.repository.UserRepository;
 import com.example.parking.global.security.JwtUtil;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -90,4 +92,18 @@ public class UserService {
         return UserProfileResDto.from(user);
     }
 
+    // [ADM-05] 관리자 권한으로 전체 고객 목록 조회 - 이름 또는 이메일 키워드로 검색 가능, 페이징 처리
+    public Page<AdminUserResDto> getAdminUsers(String keyword, Pageable pageable) {
+        if (keyword == null || keyword.isBlank()) {
+            return userRepository.findAll(pageable)
+                    .map(AdminUserResDto::from);
+        }
+
+        return userRepository.findByNameContainingIgnoreCaseOrEmailContainingIgnoreCase(
+                        keyword,
+                        keyword,
+                        pageable
+                )
+                .map(AdminUserResDto::from);
+    }
 }

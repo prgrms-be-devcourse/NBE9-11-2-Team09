@@ -33,6 +33,7 @@ public class SecurityConfig {
                         // 스웨거 및 로그인/회원가입 경로 허용
                         .requestMatchers("/swagger-ui/**", "/v3/api-docs/**", "/swagger-ui.html").permitAll()
                         .requestMatchers("/api/users/signup", "/api/users/login", "/h2-console/**").permitAll()
+                                .requestMatchers("/api/admin/**").hasRole("ADMIN")
 //                        .requestMatchers("/api/reservations/**").permitAll()
                         .anyRequest().authenticated()
                 )
