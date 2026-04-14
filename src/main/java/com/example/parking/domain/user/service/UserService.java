@@ -106,4 +106,15 @@ public class UserService {
 
         user.withdraw();
     }
+
+    // 로그아웃 - 클라이언트가 access token을 삭제하는 방식으로 로그아웃 처리 (서버에서는 별도의 상태 관리 없이 JWT의 유효성 검증으로 처리)
+    public void logout(Long userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
+
+        if (user.getStatus() != UserStatus.ACTIVE) {
+            throw new IllegalArgumentException("탈퇴한 사용자는 로그아웃할 수 없습니다.");
+        }
+    }
+
 }

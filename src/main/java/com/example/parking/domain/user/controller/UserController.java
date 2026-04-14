@@ -61,6 +61,17 @@ public class UserController {
         ));
     }
 
+    // 로그아웃 - JWT로 인증된 현재 사용자의 세션을 무효화하여 로그아웃 처리
+    @PostMapping("/api/users/logout")
+    public ResponseEntity<Map<String, String>> logout(
+            @AuthenticationPrincipal CustomUserDetails userDetails
+    ) {
+        userService.logout(userDetails.getUserId());
+        return ResponseEntity.ok(Map.of(
+                "message", "로그아웃이 완료되었습니다."
+        ));
+    }
+
     @ExceptionHandler(IllegalArgumentException.class)
     public ResponseEntity<Map<String, String>> handleIllegalArgumentException(IllegalArgumentException e) {
         return ResponseEntity.badRequest().body(Map.of(
