@@ -19,5 +19,5 @@ public interface ParkingSpotRepository extends JpaRepository<ParkingSpot, Long> 
     // [CUS-03] 동시성 제어를 위한 비관적 락 적용 조회
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query("SELECT p FROM ParkingSpot p WHERE p.id = :spotId")
-    Optional<ParkingSpot> findByIdWithPessimisticLock(@Param("spotId") Long spotId);
+    Optional<ParkingSpot> findByIdWithLock(@Param("spotId") Long spotId);
 }
