@@ -1,10 +1,10 @@
 package com.example.parking.domain.parkingspot.service;
 
 import com.example.parking.domain.parkingLot.entity.ParkingLot;
-import com.example.parking.domain.parkingspot.entity.SpotStatus;
-import com.example.parking.domain.parkingspot.entity.SpotType;
 import com.example.parking.domain.parkingspot.dto.ParkingSpotDto;
 import com.example.parking.domain.parkingspot.entity.ParkingSpot;
+import com.example.parking.domain.parkingspot.entity.SpotStatus;
+import com.example.parking.domain.parkingspot.entity.SpotType;
 import com.example.parking.domain.parkingspot.repository.ParkingSpotRepository;
 import com.example.parking.global.sse.SseEmitterManager;
 import jakarta.persistence.EntityNotFoundException;
@@ -13,6 +13,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -38,6 +39,25 @@ public class ParkingSpotService {
         .map(ParkingSpotDto::new)
         .toList();
 
+  }
+
+  @Transactional
+  public void createSpots(ParkingLot parkingLot, int totalSpot) {
+    List<ParkingSpot> spots = new ArrayList<>();
+    int smallCount    = (int) (totalSpot * 0.8);  // 80%
+    int largeCount    = (int) (totalSpot * 0.1);  // 10%
+
+
+    for (int i = 1; i <= smallCount; i++) {
+      spots.add(ParkingSpot.create(parkingLot, String.valueOf(i), SpotType.SMALL));
+    }
+    for (int i = smallCount + 1; i <= smallCount + largeCount; i++) {
+      spots.add(ParkingSpot.create(parkingLot, String.valueOf(i), SpotType.LARGE));
+    }
+    for (int i = smallCount + largeCount + 1; i <= totalSpot; i++) {
+      spots.add(ParkingSpot.create(parkingLot, String.valueOf(i), SpotType.ELECTRIC));
+    }
+    parkingSpotRepository.saveAll(spots);
   }
 
   @Transactional
