@@ -1,10 +1,10 @@
 package com.example.parking.domain.parkingspot.service;
 
 import com.example.parking.domain.parkingLot.entity.ParkingLot;
-import com.example.parking.domain.parkingspot.entity.SpotStatus;
-import com.example.parking.domain.parkingspot.entity.SpotType;
 import com.example.parking.domain.parkingspot.dto.ParkingSpotDto;
 import com.example.parking.domain.parkingspot.entity.ParkingSpot;
+import com.example.parking.domain.parkingspot.entity.SpotStatus;
+import com.example.parking.domain.parkingspot.entity.SpotType;
 import com.example.parking.domain.parkingspot.repository.ParkingSpotRepository;
 import com.example.parking.global.sse.SseEmitterManager;
 import jakarta.persistence.EntityNotFoundException;
@@ -13,6 +13,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
