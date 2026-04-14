@@ -24,19 +24,19 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
-            .csrf(( csrf) -> csrf.disable())
-            .headers((headers) -> headers
-                .addHeaderWriter(new XFrameOptionsHeaderWriter(
-                    XFrameOptionsHeaderWriter.XFrameOptionsMode.SAMEORIGIN)))
-            .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-            .authorizeHttpRequests(auth -> auth
-                // 스웨거 및 로그인/회원가입 경로 허용
-                .requestMatchers("/swagger-ui/**", "/v3/api-docs/**", "/swagger-ui.html").permitAll()
-                .requestMatchers("/api/users/signup", "/api/users/login", "/h2-console/**").permitAll()
-                .requestMatchers("/api/reservations/**").permitAll()
-                .anyRequest().authenticated()
-            )
-            .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class); // [CUS-08] JWT 인증 - JwtFilter를 UsernamePasswordAuthenticationFilter 앞에 추가하여 모든 요청에서 JWT 검증 수행
+                .csrf(( csrf) -> csrf.disable())
+                .headers((headers) -> headers
+                        .addHeaderWriter(new XFrameOptionsHeaderWriter(
+                                XFrameOptionsHeaderWriter.XFrameOptionsMode.SAMEORIGIN)))
+                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .authorizeHttpRequests(auth -> auth
+                        // 스웨거 및 로그인/회원가입 경로 허용
+                        .requestMatchers("/swagger-ui/**", "/v3/api-docs/**", "/swagger-ui.html").permitAll()
+                        .requestMatchers("/api/users/signup", "/api/users/login", "/h2-console/**").permitAll()
+//                        .requestMatchers("/api/reservations/**").permitAll()
+                        .anyRequest().authenticated()
+                )
+                .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class); // [CUS-08] JWT 인증 - JwtFilter를 UsernamePasswordAuthenticationFilter 앞에 추가하여 모든 요청에서 JWT 검증 수행
 
         return http.build();
     }

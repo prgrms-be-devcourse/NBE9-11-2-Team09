@@ -3,9 +3,6 @@ package com.example.parking.global.initdata;
 import com.example.parking.domain.parkingLot.repository.ParkingLotRepository;
 import com.example.parking.domain.parkingspot.repository.ParkingSpotRepository;
 import com.example.parking.domain.reservation.repository.ReservationRepository;
-import com.example.parking.domain.user.entity.User;
-import com.example.parking.domain.user.entity.UserRole;
-import com.example.parking.domain.user.entity.VehicleType;
 import com.example.parking.domain.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.CommandLineRunner;
@@ -24,17 +21,17 @@ public class ParkingDataRunner implements CommandLineRunner {
     @Override
     @Transactional
     public void run(String... args) {
-        if (userRepository.count() > 0) return; // 이미 데이터가 있으면 실행 안 함
-
-        // 1. 유저 (ID: 1)
-        User user = userRepository.save(User.builder()
-                .email("test@test.com")
-                .password("1234")
-                .name("배재현")
-                .plateNumber("12가3456")
-                .vehicleType(VehicleType.SMALL)
-                .role(UserRole.USER)
-                .build());
+//        if (userRepository.count() > 0) return; // 이미 데이터가 있으면 실행 안 함
+//
+//        // 1. 유저 (ID: 1)
+//        User user = userRepository.save(User.builder()
+//                .email("test@test.com")
+//                .password("1234")
+//                .name("배재현")
+//                .plateNumber("12가3456")
+//                .vehicleType(VehicleType.SMALL)
+//                .role(UserRole.USER)
+//                .build());
 
 //        // 2. 주차장 (ID: 1)
 //        ParkingLot parkingLot = parkingLotRepository.save(ParkingLot.builder()
