@@ -1,8 +1,8 @@
 package com.example.parking.domain.parkingspot.service;
 
 import com.example.parking.domain.parkingLot.entity.ParkingLot;
-import com.example.parking.domain.parkingLot.entity.SpotStatus;
-import com.example.parking.domain.parkingLot.entity.SpotType;
+import com.example.parking.domain.parkingspot.entity.SpotStatus;
+import com.example.parking.domain.parkingspot.entity.SpotType;
 import com.example.parking.domain.parkingspot.dto.ParkingSpotDto;
 import com.example.parking.domain.parkingspot.entity.ParkingSpot;
 import com.example.parking.domain.parkingspot.repository.ParkingSpotRepository;
