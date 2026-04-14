@@ -14,5 +14,6 @@ public interface UserRepository extends JpaRepository<User, Long> {
     Optional<User> findByEmail(String email);
 
     // [CUS-10] 차량 정보 수정 - 본인을 제외한 다른 사용자가 같은 차량번호를 사용하는지 확인
+    // 본인 차량번호와 같은 값으로 다시 저장하는 경우는 허용해야 하므로 AndIdNot 조건이 필요
     boolean existsByPlateNumberAndIdNot(String plateNumber, Long id);
 }
