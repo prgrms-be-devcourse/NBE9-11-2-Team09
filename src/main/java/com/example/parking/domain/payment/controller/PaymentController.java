@@ -4,9 +4,11 @@ import com.example.parking.domain.payment.dto.PaymentAdminRespDto;
 import com.example.parking.domain.payment.dto.PaymentReqDto;
 import com.example.parking.domain.payment.dto.PaymentRespDto;
 import com.example.parking.domain.payment.service.PaymentService;
+import com.example.parking.global.security.CustomUserDetails;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -24,9 +26,10 @@ public class PaymentController {
      */
     @PostMapping("/payments")
     public ResponseEntity<PaymentRespDto> processPayment(
-            @Valid @RequestBody PaymentReqDto request) {
+            @Valid @RequestBody PaymentReqDto request,
+            @AuthenticationPrincipal CustomUserDetails userDetails) {
         return ResponseEntity.ok(
-                paymentService.processPayment(request, 2L) // JWT 완성 후 교체
+                paymentService.processPayment(request, userDetails.getUserId())
         );
     }
 

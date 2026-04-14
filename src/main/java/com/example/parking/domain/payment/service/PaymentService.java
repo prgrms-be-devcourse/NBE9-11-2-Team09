@@ -9,6 +9,7 @@ import com.example.parking.domain.payment.repository.PaymentRepository;
 import com.example.parking.domain.reservation.entity.Reservation;
 import com.example.parking.domain.reservation.repository.ReservationRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -16,6 +17,7 @@ import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 @Transactional
@@ -32,35 +34,44 @@ public class PaymentService {
     @Transactional
     public PaymentRespDto processPayment(PaymentReqDto request, Long userId) {
 
-        // 예약 ID로 예약 조회, 없으면 예외 발생
         Reservation reservation = reservationRepository.findById(request.getReservationId())
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 예약입니다."));
+                .orElseThrow(() -> {
+                    log.warn("결제 실패 - 존재하지 않는 예약 reservationId: {}", request.getReservationId());
+                    return new IllegalArgumentException("존재하지 않는 예약입니다.");
+                });
 
-        // 본인 예약 확인
-        // if (!reservation.getUser().getId().equals(userId)) {
-        //     throw new SecurityException("본인의 예약만 결제할 수 있습니다.");
-        // }
-
-        // 예약 상태 검증 - PENDING 상태만 결제 가능
-        switch (reservation.getStatus()) {
-            case PENDING -> {}
-            case CONFIRMED -> throw new IllegalStateException("이미 결제된 예약입니다.");
-            case COMPLETED -> throw new IllegalStateException("완료된 예약입니다.");
-            case CANCELED -> throw new IllegalStateException("취소된 예약은 결제할 수 없습니다.");
+        if (!reservation.getUser().getId().equals(userId)) {
+            log.warn("결제 실패 - 본인 예약 아님 userId: {}, reservationId: {}", userId, request.getReservationId());
+            throw new SecurityException("본인의 예약만 결제할 수 있습니다.");
         }
 
-        // 중복 결제 방지 - 코드 레벨 검증 (DB UK 제약과 2중 방어)
+        switch (reservation.getStatus()) {
+            case PENDING -> {}
+            case CONFIRMED -> {
+                log.warn("결제 실패 - 이미 결제된 예약 reservationId: {}", request.getReservationId());
+                throw new IllegalStateException("이미 결제된 예약입니다.");
+            }
+            case COMPLETED -> {
+                log.warn("결제 실패 - 완료된 예약 reservationId: {}", request.getReservationId());
+                throw new IllegalStateException("완료된 예약입니다.");
+            }
+            case CANCELED -> {
+                log.warn("결제 실패 - 취소된 예약 reservationId: {}", request.getReservationId());
+                throw new IllegalStateException("취소된 예약은 결제할 수 없습니다.");
+            }
+        }
+
         if (paymentRepository.existsByReservationId(request.getReservationId())) {
+            log.warn("결제 실패 - 중복 결제 시도 reservationId: {}", request.getReservationId());
             throw new IllegalStateException("이미 결제된 예약입니다.");
         }
 
-        // 금액 검증 - 클라이언트 금액 조작 방지를 위해 서버에서 직접 계산
         int expectedAmount = calculateExpectedAmount(reservation);
         if (!request.getAmount().equals(expectedAmount)) {
+            log.warn("결제 실패 - 금액 불일치 reservationId: {}", request.getReservationId());
             throw new IllegalArgumentException("결제 금액이 올바르지 않습니다. 예상 금액: " + expectedAmount);
         }
 
-        // 결제 저장 - 서버 계산 금액으로 저장
         Payment payment = Payment.builder()
                 .reservation(reservation)
                 .amount(expectedAmount)
@@ -106,27 +117,25 @@ public class PaymentService {
     public PaymentRespDto refundPayment(Long paymentId) {
 
         Payment payment = paymentRepository.findById(paymentId)
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 결제입니다."));
+                .orElseThrow(() -> {
+                    log.warn("환불 실패 - 존재하지 않는 결제 paymentId: {}", paymentId);
+                    return new IllegalArgumentException("존재하지 않는 결제입니다.");
+                });
 
         if (payment.getStatus() == PaymentStatus.REFUND) {
+            log.warn("환불 실패 - 이미 환불된 결제 paymentId: {}", paymentId);
             throw new IllegalStateException("이미 환불된 결제입니다.");
         }
 
         if (payment.getStatus() != PaymentStatus.COMPLETE) {
+            log.warn("환불 실패 - 환불 불가 상태 paymentId: {}", paymentId);
             throw new IllegalStateException("환불 가능한 상태가 아닙니다.");
         }
 
         payment.refund();
-
         return PaymentRespDto.from(payment);
     }
 
-    /**
-     * 결제 금액 계산
-     * - 주차 시작/종료 시간으로 주차 시간(분) 계산
-     * - 분을 시간으로 변환 후 주차장 단가 곱하기
-     * - Math.ceil로 올림 처리
-     */
     private int calculateExpectedAmount(Reservation reservation) {
         long minutes = ChronoUnit.MINUTES.between(
                 reservation.getStartTime(),

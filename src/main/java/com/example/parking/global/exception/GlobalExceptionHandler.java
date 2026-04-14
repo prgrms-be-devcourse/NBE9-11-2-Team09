@@ -22,7 +22,7 @@ public class GlobalExceptionHandler {
 //        .body(new ErrorResponse("CONFLICT", e.getMessage()));
 //  }
 //
-// 본인 예약 아닐 때 (JWT 완성 후 활성화)
+// 본인 예약 아닐 때
 // @ExceptionHandler(SecurityException.class)
 // public ResponseEntity<ErrorResponse> handleSecurity(SecurityException e) {
 //    return ResponseEntity.status(HttpStatus.FORBIDDEN)
