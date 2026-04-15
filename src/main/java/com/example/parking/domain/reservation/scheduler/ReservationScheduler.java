@@ -19,7 +19,7 @@ public class ReservationScheduler {
 
     private final ReservationRepository reservationRepository;
 
-    @Scheduled(cron = "*/10 * * * * *")
+    @Scheduled(cron = "* */10 * * * *")
     @Transactional
     public void handleReservationLifecycle() {
         LocalDateTime now = LocalDateTime.now();

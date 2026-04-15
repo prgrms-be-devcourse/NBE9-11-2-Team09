@@ -145,13 +145,13 @@
             Reservation savedReservation = reservationRepository.save(newReservation);
             Long reservationId = savedReservation.getId(); // ID 추출
 
-            // 💡 2. [실시간 취소 예약] 10초 뒤에 아래 cancelIfUnpaid 메서드를 실행합니다.
+            // 💡 2. [실시간 취소 예약] 50초 뒤에 아래 cancelIfUnpaid 메서드를 실행합니다.
             taskScheduler.schedule(() -> {
                 // 💡 자기 자신의 프록시를 가져와서 호출해야 @Transactional이 정상 작동합니다.
                 ReservationService self = reservationServiceProvider.getObject();
                 self.cancelIfUnpaid(reservationId);
-            }, Instant.now().plusSeconds(10));
-            log.info("[예약 생성] 10초 타이머 작동 시작 - 예약 ID: {}", reservationId);
+            }, Instant.now().plusSeconds(50));
+            log.info("[예약 생성] 50초 타이머 작동 시작 - 예약 ID: {}", reservationId);
 
             return ReservationResDto.from(savedReservation);
         }
