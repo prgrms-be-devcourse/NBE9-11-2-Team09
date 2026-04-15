@@ -20,7 +20,6 @@ public class JwtFilter extends OncePerRequestFilter {
 
     // [CUS-08] JWT 인증 - 요청 헤더의 Bearer 토큰을 검증하는 필터
     private final JwtUtil jwtUtil;
-    private final UserRepository userRepository;
 
     @Override
     protected void doFilterInternal(HttpServletRequest request,
@@ -29,13 +28,13 @@ public class JwtFilter extends OncePerRequestFilter {
 
         String token = resolveToken(request);
 
-        if (token != null && jwtUtil.isValid(token)) {
+        // refresh token이 인증 필터를 통과하지 않도록 access token만 인증에 사용한다.
+        if (token != null && jwtUtil.isValid(token) && "access".equals(jwtUtil.getTokenType(token))) {
             Long userId = jwtUtil.getUserId(token);
+            String userEmail = jwtUtil.getUserEmail(token);
+            String role = jwtUtil.getRole(token);
 
-            User user = userRepository.findById(userId).orElse(null);
-
-            if (user != null && user.getStatus().name().equals("ACTIVE")) {
-                CustomUserDetails userDetails = new CustomUserDetails(user);
+            CustomUserDetails userDetails = new CustomUserDetails(userId, userEmail, role);
 
                 UsernamePasswordAuthenticationToken authentication =
                         new UsernamePasswordAuthenticationToken(
@@ -45,7 +44,7 @@ public class JwtFilter extends OncePerRequestFilter {
                         );
 
                 SecurityContextHolder.getContext().setAuthentication(authentication);
-            }
+
         }
 
         filterChain.doFilter(request, response);

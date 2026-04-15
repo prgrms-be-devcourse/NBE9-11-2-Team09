@@ -33,6 +33,13 @@ public class UserController {
         return ResponseEntity.ok(response);
     }
 
+    // access token 만료 후 refresh token으로 새 access token을 발급받는 API
+    @PostMapping("/api/users/refresh")
+    public ResponseEntity<LoginResDto> refresh(@Valid @RequestBody RefreshTokenReqDto reqDto) {
+        LoginResDto response = userService.refresh(reqDto);
+        return ResponseEntity.ok(response);
+    }
+
     // [CUS-08] 로그인 - 내 정보 조회 - JWT로 인증된 현재 사용자의 회원 정보 조회
     @GetMapping("/api/users/me")
     public ResponseEntity<UserProfileResDto> getMyProfile(
