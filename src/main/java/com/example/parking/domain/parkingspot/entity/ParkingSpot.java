@@ -65,10 +65,10 @@ public class ParkingSpot {
         this.reservedAt = LocalDateTime.now();
     }
 
-    public void release() {
-        this.status = SpotStatus.AVAILABLE;
-        this.reservedAt = null;
-    }
+//    public void release() {
+//        this.status = SpotStatus.AVAILABLE;
+//        this.reservedAt = null;
+//    }
 
     public void confirmReservation() {
         this.reservedAt = null;  // 스케줄러가 건드리지 않도록
