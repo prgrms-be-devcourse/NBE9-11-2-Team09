@@ -8,6 +8,10 @@ import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
 
+@Entity
+@Table(name = "refresh_tokens")
+@Getter
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 // 리프레시 토큰 관리 - 사용자별로 하나의 리프레시 토큰을 저장하는 엔티티
 public class RefreshToken {
 

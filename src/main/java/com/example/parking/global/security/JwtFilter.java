@@ -28,7 +28,8 @@ public class JwtFilter extends OncePerRequestFilter {
 
         String token = resolveToken(request);
 
-        if (token != null && jwtUtil.isValid(token)) {
+        // refresh token이 인증 필터를 통과하지 않도록 access token만 인증에 사용한다.
+        if (token != null && jwtUtil.isValid(token) && "access".equals(jwtUtil.getTokenType(token))) {
             Long userId = jwtUtil.getUserId(token);
             String userEmail = jwtUtil.getUserEmail(token);
             String role = jwtUtil.getRole(token);

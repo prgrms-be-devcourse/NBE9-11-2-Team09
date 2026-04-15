@@ -153,6 +153,9 @@ public class UserService {
         }
 
         user.withdraw();
+
+        // 탈퇴 후 재발급 경로를 막기 위해 refresh token도 함께 삭제
+        refreshTokenRepository.deleteByUserId(userId);
     }
 
     // 로그아웃 - 클라이언트가 access token을 삭제하는 방식으로 로그아웃 처리 (서버에서는 별도의 상태 관리 없이 JWT의 유효성 검증으로 처리)
@@ -163,6 +166,9 @@ public class UserService {
         if (user.getStatus() != UserStatus.ACTIVE) {
             throw new IllegalArgumentException("탈퇴한 사용자는 로그아웃할 수 없습니다.");
         }
+
+        // 로그아웃 시 저장된 refresh token을 제거해 세션을 종료
+        refreshTokenRepository.deleteByUserId(userId);
     }
 
     // 사용자당 refresh token 1개 정책으로 저장하거나 기존 값을 갱신하는 메서드

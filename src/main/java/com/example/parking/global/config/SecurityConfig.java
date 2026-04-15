@@ -30,7 +30,8 @@ public class SecurityConfig {
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/swagger-ui/**", "/v3/api-docs/**", "/swagger-ui.html").permitAll()
-                        .requestMatchers("/api/users/signup", "/api/users/login", "/h2-console/**").permitAll()
+                        // refresh API는 access token 만료 후에도 호출할 수 있어야 하므로 permitAll로 둔다.
+                        .requestMatchers("/api/users/signup", "/api/users/login", "/api/users/refresh", "/h2-console/**").permitAll()
                                 .requestMatchers("/api/admin/**").hasRole("ADMIN")
 //                        .requestMatchers("/api/reservations/**").permitAll()
                         // [CUS-05] 결제 - 고객만 결제 가능
