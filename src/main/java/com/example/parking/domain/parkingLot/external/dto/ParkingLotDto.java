@@ -7,7 +7,7 @@ public record ParkingLotDto(
         String address,
         Integer totalSpot
 ) {
-    public static ParkingLotDto from(ParkingApiItem item) {
+    public static ParkingLotDto from(ParkingApiDto.ParkingLotItem item) {
         return new ParkingLotDto(
                 item.pkltCd(),
                 item.pkltNm(),
