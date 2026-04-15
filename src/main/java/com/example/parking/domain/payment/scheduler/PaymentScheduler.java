@@ -31,7 +31,7 @@ public class PaymentScheduler {
 
         for (Payment payment : expiredPayments) {
             payment.fail();
-            parkingSpotRepository.failPayment(
+            parkingSpotRepository.completePayment(
                     payment.getReservation().getParkingSpot().getId());
             log.info("결제 만료 처리 - paymentId: {}", payment.getId());
         }
