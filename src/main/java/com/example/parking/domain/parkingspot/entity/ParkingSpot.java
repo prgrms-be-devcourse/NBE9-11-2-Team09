@@ -68,11 +68,15 @@ public class ParkingSpot {
         this.reservedAt = LocalDateTime.now();
     }
 
-//    public void release() {
-//        this.status = SpotStatus.AVAILABLE;
-//        this.reservedAt = null;
-//    }
+    public void release() {
+        this.status = SpotStatus.AVAILABLE;
+        this.reservedAt = null;
+    }
 
+
+    public void updateStatus(SpotStatus status) {
+        this.status = status;
+    }
 
 
 }
