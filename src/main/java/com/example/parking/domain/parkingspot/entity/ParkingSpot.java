@@ -40,6 +40,9 @@ public class ParkingSpot {
     @Column(name = "reserved_at")
     private LocalDateTime reservedAt;
 
+    @Column(name = "payment_started_at")
+    private LocalDateTime paymentStartedAt;
+
     @Builder
     public ParkingSpot(ParkingLot parkingLot, String number, SpotType type) {
         this.parkingLot = parkingLot;
@@ -69,6 +72,7 @@ public class ParkingSpot {
 //        this.status = SpotStatus.AVAILABLE;
 //        this.reservedAt = null;
 //    }
+
 
 
 }
