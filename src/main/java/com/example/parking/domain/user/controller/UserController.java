@@ -59,16 +59,6 @@ public class UserController {
         return ResponseEntity.ok(response);
     }
 
-    // [ADM-05] 관리자 화면에서 전체 고객 목록 페이징 조회 - 이름 또는 이메일 키워드로 검색 가능
-    @GetMapping("/api/admin/users")
-    public ResponseEntity<Page<AdminUserResDto>> getAdminUsers(
-            @RequestParam(required = false) String keyword,
-            Pageable pageable
-    ) {
-        Page<AdminUserResDto> response = userService.getAdminUsers(keyword, pageable);
-        return ResponseEntity.ok(response);
-    }
-
     // [CUS-07] 회원 탈퇴 - JWT로 인증된 현재 사용자의 계정을 탈퇴 처리
     @DeleteMapping("/api/users/me")
     public ResponseEntity<Map<String, String>> withdraw(

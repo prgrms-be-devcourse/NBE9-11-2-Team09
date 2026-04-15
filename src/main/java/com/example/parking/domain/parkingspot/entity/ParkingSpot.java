@@ -74,12 +74,5 @@ public class ParkingSpot {
 //    }
 
 
-    public void confirmReservation() {
-        this.reservedAt = null;  // 스케줄러가 건드리지 않도록
-    }
 
-
-    public void updateStatus(SpotStatus spotStatus) {
-        this.status = spotStatus;  // spotStatus로 변경
-    }
 }
