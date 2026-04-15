@@ -7,7 +7,6 @@ import com.example.parking.domain.parkingspot.entity.SpotStatus;
 import com.example.parking.domain.parkingspot.entity.SpotType;
 import com.example.parking.domain.parkingspot.repository.ParkingSpotRepository;
 import com.example.parking.global.sse.SseEmitterManager;
-import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -61,9 +60,7 @@ public class ParkingSpotService {
   }
 
   @Transactional
-  public ParkingSpot reserve(Long spotId) {
-    ParkingSpot spot = parkingSpotRepository.findByIdWithLock(spotId)
-        .orElseThrow(() -> new EntityNotFoundException("자리를 찾을 수 없습니다."));
+  public ParkingSpot reserve(ParkingSpot spot) {
 
     spot.reserve();
 
