@@ -68,4 +68,10 @@ public class Reservation {
         this.status = ReservationStatus.CANCELED;
         this.canceledAt = LocalDateTime.now();
     }
+
+    public void confirm() {
+        this.status = ReservationStatus.CONFIRMED;
+    }
+
+
 }
