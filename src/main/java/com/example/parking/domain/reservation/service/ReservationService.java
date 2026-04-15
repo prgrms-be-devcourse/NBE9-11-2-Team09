@@ -71,21 +71,25 @@
         // [CUS-03] 예약 생성
         @Transactional
         public ReservationResDto createReservation(Long userId, ReservationReqDto reqDto) {
-            // 1. 시간 유효성 검증
-            if (reqDto.startTime().isBefore(LocalDateTime.now())) {
+            // 💡 1. DTO에서 안전하게 파싱된 시간을 가져옵니다.
+            LocalDateTime start = reqDto.getParsedStartTime();
+            LocalDateTime end = reqDto.getParsedEndTime();
+
+            // 2. 시간 유효성 검증
+            if (start.isBefore(LocalDateTime.now())) {
                 throw new IllegalArgumentException("과거 시간으로 예약할 수 없습니다.");
             }
-            if (reqDto.endTime().isBefore(reqDto.startTime())) {
+            if (end.isBefore(start)) {
                 throw new IllegalArgumentException("종료 시간이 시작 시간보다 앞설 수 없습니다.");
             }
 
-            // 2. 유저와 주차장 정보 조회
+            // 3. 유저와 주차장 정보 조회
             User user = userRepository.findById(userId)
                     .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 유저입니다."));
             ParkingLot parkingLot = parkingLotRepository.findById(reqDto.parkingLotId())
                     .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 주차장입니다."));
 
-            // 3. 주차 자리 조회 (🔥비관적 락 획득)
+            // 4. 주차 자리 조회 (🔥비관적 락 획득)
             ParkingSpot parkingSpot = parkingSpotRepository.findByIdWithLock(reqDto.parkingSpotId())
                     .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 주차 자리입니다."));
 
@@ -95,29 +99,29 @@
                         ")에 해당 주차 자리(ID: " + reqDto.parkingSpotId() + ")가 존재하지 않습니다.");
             }
 
-            // 4. 예약 시간 중복 검사
+            // 5. 예약 시간 중복 검사
             // 핵심: 취소된 예약(CANCELLED)은 중복 카운트에서 제외하도록 Repository 쿼리가 수정되어야 합니다.
             long overlapCount = reservationRepository.countOverlappingReservations(
-                    parkingSpot.getId(), reqDto.startTime(), reqDto.endTime()
+                    parkingSpot.getId(), start, end // 👈 여기서 파싱된 변수를 사용합니다.
             );
 
             if (overlapCount > 0) {
                 throw new IllegalStateException("해당 시간에 이미 예약된 자리입니다.");
             }
 
-            // 5. 검증을 모두 통과했으므로 예약 엔티티 생성 및 저장
+            // 6. 검증을 모두 통과했으므로 예약 엔티티 생성 및 저장
             Reservation newReservation = Reservation.builder()
                     .user(user)
                     .parkingLot(parkingLot)
                     .parkingSpot(parkingSpot)
-                    .startTime(reqDto.startTime())
-                    .endTime(reqDto.endTime())
+                    .startTime(start) // 👈 파싱된 변수 적용
+                    .endTime(end)     // 👈 파싱된 변수 적용
                     .status(ReservationStatus.PENDING) // 초기 상태 명시
                     .build();
 
             Reservation savedReservation = reservationRepository.save(newReservation);
 
-            // 6. DTO로 변환하여 반환
+            // 7. DTO로 변환하여 반환
             return ReservationResDto.from(savedReservation);
         }
     }

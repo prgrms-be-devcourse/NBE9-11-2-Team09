@@ -1,14 +1,14 @@
 package com.example.parking.domain.user.service;
 
-import com.example.parking.domain.user.dto.LoginReqDto;
-import com.example.parking.domain.user.dto.LoginResDto;
-import com.example.parking.domain.user.dto.SignupReqDto;
-import com.example.parking.domain.user.dto.UserProfileResDto;
+import com.example.parking.domain.admin.user.dto.AdminUserResDto;
+import com.example.parking.domain.user.dto.*;
 import com.example.parking.domain.user.entity.User;
 import com.example.parking.domain.user.entity.UserStatus;
 import com.example.parking.domain.user.repository.UserRepository;
 import com.example.parking.global.security.JwtUtil;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -72,5 +72,66 @@ public class UserService {
         }
 
         return UserProfileResDto.from(user);
+    }
+
+    // [CUS-10] 내 차량 정보 수정 - JWT로 인증된 현재 사용자의 차량 번호와 차량 종류 수정
+    @Transactional
+    public UserProfileResDto updateMyVehicle(Long userId, VehicleUpdateReqDto reqDto) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
+
+        if (user.getStatus() != UserStatus.ACTIVE) {
+            throw new IllegalArgumentException("탈퇴한 사용자는 수정할 수 없습니다.");
+        }
+
+        if (userRepository.existsByPlateNumberAndIdNot(reqDto.getPlateNumber(), userId)) {
+            throw new IllegalArgumentException("이미 등록된 차량 번호입니다.");
+        }
+
+        user.updateVehicleInfo(reqDto.getPlateNumber(), reqDto.getVehicleType());
+
+        return UserProfileResDto.from(user);
+    }
+
+    // [ADM-05] 관리자 권한으로 전체 고객 목록 조회 - 이름 또는 이메일 키워드로 검색 가능, 페이징 처리
+    public Page<AdminUserResDto> getAdminUsers(String keyword, Pageable pageable) {
+        if (keyword == null || keyword.isBlank()) {
+            return userRepository.findAll(pageable)
+                    .map(AdminUserResDto::from);
+        }
+
+        return userRepository.findByNameContainingIgnoreCaseOrEmailContainingIgnoreCase(
+                        keyword,
+                        keyword,
+                        pageable
+                )
+                .map(AdminUserResDto::from);
+    }
+
+    // [CUS 07] 회원탈퇴 - 인증된 사용자의 비밀번호를 다시 확인한 뒤 soft delete 처리
+    @Transactional
+    public void withdraw(Long userId, WithdrawReqDto reqDto) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
+
+        if (user.getStatus() != UserStatus.ACTIVE) {
+            throw new IllegalArgumentException("이미 탈퇴한 사용자입니다.");
+        }
+
+        if (!passwordEncoder.matches(reqDto.getPassword(), user.getPassword())) {
+            throw new IllegalArgumentException("비밀번호가 일치하지 않습니다.");
+        }
+
+        user.withdraw();
+    }
+
+    // 로그아웃 - 클라이언트가 access token을 삭제하는 방식으로 로그아웃 처리 (서버에서는 별도의 상태 관리 없이 JWT의 유효성 검증으로 처리)
+    public void logout(Long userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
+
+        if (user.getStatus() != UserStatus.ACTIVE) {
+            throw new IllegalArgumentException("탈퇴한 사용자는 로그아웃할 수 없습니다.");
+        }
     }
 }

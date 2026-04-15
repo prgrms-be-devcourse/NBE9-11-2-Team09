@@ -1,10 +1,10 @@
 package com.example.parking.domain.parkingspot.service;
 
 import com.example.parking.domain.parkingLot.entity.ParkingLot;
-import com.example.parking.domain.parkingLot.entity.SpotStatus;
-import com.example.parking.domain.parkingLot.entity.SpotType;
 import com.example.parking.domain.parkingspot.dto.ParkingSpotDto;
 import com.example.parking.domain.parkingspot.entity.ParkingSpot;
+import com.example.parking.domain.parkingspot.entity.SpotStatus;
+import com.example.parking.domain.parkingspot.entity.SpotType;
 import com.example.parking.domain.parkingspot.repository.ParkingSpotRepository;
 import com.example.parking.global.sse.SseEmitterManager;
 import jakarta.persistence.EntityNotFoundException;
@@ -42,25 +42,6 @@ public class ParkingSpotService {
   }
 
   @Transactional
-  public ParkingSpot reserve(Long spotId) {
-    ParkingSpot spot = parkingSpotRepository.findByIdWithLock(spotId)
-        .orElseThrow(() -> new EntityNotFoundException("자리를 찾을 수 없습니다."));
-
-    spot.reserve();
-
-    sseEmitterManager.notify(
-        spot.getParkingLot().getId(),
-        new ParkingSpotDto(spot)
-    );
-
-    return spot;
-  }
-
-  public SseEmitter subscribe(Long parkingLotId) {
-    return sseEmitterManager.subscribe(parkingLotId);
-  }
-
-  @Transactional
   public void createSpots(ParkingLot parkingLot, int totalSpot) {
     List<ParkingSpot> spots = new ArrayList<>();
     int smallCount    = (int) (totalSpot * 0.8);  // 80%
@@ -79,4 +60,25 @@ public class ParkingSpotService {
     parkingSpotRepository.saveAll(spots);
   }
 
+  @Transactional
+  public ParkingSpot reserve(Long spotId) {
+    ParkingSpot spot = parkingSpotRepository.findByIdWithLock(spotId)
+        .orElseThrow(() -> new EntityNotFoundException("자리를 찾을 수 없습니다."));
+
+    spot.reserve();
+
+    sseEmitterManager.notify(
+        spot.getParkingLot().getId(),
+        new ParkingSpotDto(spot)
+    );
+
+    return spot;
+  }
+
+  public SseEmitter subscribe(Long parkingLotId) {
+    return sseEmitterManager.subscribe(parkingLotId);
+  }
+
+  public void createSpots(ParkingLot saved, Integer totalSpot) {
+  }
 }
