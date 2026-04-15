@@ -16,26 +16,21 @@ import java.util.Date;
 public class JwtUtil {
 
     private final SecretKey secretKey;
-    private final long accessTokenExpirationMillis = 1000L * 60 * 60; // 1시간
+    // 로그인 - JWT 토큰 생성 - access token과 refresh token의 만료 시간 설정
+    private final long accessTokenExpirationMillis = 1000L * 60 * 30; // 30분
+    private final long refreshTokenExpirationMillis = 1000L * 60 * 60 * 24 * 7; // 7일
 
     public JwtUtil(@Value("${spring.jwt.secret}") String secret) {
         this.secretKey = Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8));
     }
 
-    // [CUS-08] 로그인 - 사용자 식별 정보와 권한을 담은 JWT access token 생성
+    // 로그인 - JWT 토큰 생성 - 사용자 정보를 담은 JWT access token과 refresh token 생성
     public String createAccessToken(User user) {
-        Date now = new Date();
-        Date expiration = new Date(now.getTime() + accessTokenExpirationMillis);
+        return createToken(user, accessTokenExpirationMillis, "access");
+    }
 
-        return Jwts.builder()
-                .subject(String.valueOf(user.getId()))
-                .claim("userId", user.getId())
-                .claim("userEmail", user.getEmail())
-                .claim("role", user.getRole().name())
-                .issuedAt(now)
-                .expiration(expiration)
-                .signWith(secretKey)
-                .compact();
+    public String createRefreshToken(User user) {
+        return createToken(user, refreshTokenExpirationMillis, "refresh");
     }
 
     // [CUS-08] 로그인 - JWT 토큰 검증 - 토큰의 유효성 검사 및 사용자 정보 추출
@@ -72,6 +67,32 @@ public class JwtUtil {
     // [CUS-08] 로그인 - JWT 토큰 검증 - 토큰에서 사용자 역할 추출
     public String getRole(String token) {
         return parseClaims(token).get("role", String.class);
+    }
+
+    // access / refresh 토큰 구분을 위해 type claim을 사용
+    public String getTokenType(String token) {
+        return parseClaims(token).get("type", String.class);
+    }
+
+    public Date getExpiration(String token) {
+        return parseClaims(token).getExpiration();
+    }
+
+    // 사용자 정보를 담은 JWT 토큰 생성 - access token과 refresh token의 공통 메서드
+    private String createToken(User user, long expirationMillis, String type) {
+        Date now = new Date();
+        Date expiration = new Date(now.getTime() + expirationMillis);
+
+        return Jwts.builder()
+                .subject(String.valueOf(user.getId()))
+                .claim("userId", user.getId())
+                .claim("userEmail", user.getEmail())
+                .claim("role", user.getRole().name())
+                .claim("type", type)
+                .issuedAt(now)
+                .expiration(expiration)
+                .signWith(secretKey)
+                .compact();
     }
 
     // [CUS-08] 로그인 - JWT 토큰 검증 - 토큰의 유효성 검사 및 사용자 정보 추출을 위한 공통 메서드
