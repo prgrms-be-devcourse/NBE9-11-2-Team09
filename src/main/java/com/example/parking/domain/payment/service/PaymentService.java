@@ -1,5 +1,6 @@
 package com.example.parking.domain.payment.service;
 
+import com.example.parking.domain.parkingspot.repository.ParkingSpotRepository;
 import com.example.parking.domain.payment.dto.PaymentAdminRespDto;
 import com.example.parking.domain.payment.dto.PaymentReqDto;
 import com.example.parking.domain.payment.dto.PaymentRespDto;
@@ -13,6 +14,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -25,11 +27,12 @@ public class PaymentService {
 
     private final PaymentRepository paymentRepository;
     private final ReservationRepository reservationRepository;
+    private final ParkingSpotRepository parkingSpotRepository;
 
     /**
      * CUS-05: 결제 시작
      * - PROCESSING 상태로 저장
-     * - 주차자리 PAYING으로 변경 (스케줄러 충돌 방지)
+     * - 주차자리 OCCUPIED → PAYING으로 변경 (스케줄러 충돌 방지)
      */
     @Transactional
     public PaymentRespDto startPayment(PaymentReqDto request, Long userId) {
@@ -46,7 +49,13 @@ public class PaymentService {
                 .build();
 
         // 결제 시작 시 주차자리 PAYING으로 변경
-        reservation.getParkingSpot().startPayment();
+        int updatedCount = parkingSpotRepository.startPayment(
+                reservation.getParkingSpot().getId(), LocalDateTime.now());
+
+        if (updatedCount == 0) {
+            log.warn("결제 시작 실패 - 주차자리 상태 변경 실패 spotId: {}", reservation.getParkingSpot().getId());
+            throw new IllegalStateException("결제를 시작할 수 없는 상태입니다.");
+        }
 
         log.info("결제 시작 - reservationId: {}, userId: {}", request.getReservationId(), userId);
         return PaymentRespDto.from(paymentRepository.save(payment));
@@ -56,7 +65,7 @@ public class PaymentService {
      * CUS-05: 결제 승인
      * - COMPLETE 상태로 변경
      * - 예약 CONFIRMED로 변경
-     * - 주차자리 AVAILABLE로 변경
+     * - 주차자리 PAYING → AVAILABLE로 변경
      */
     @Transactional
     public PaymentRespDto approvePayment(Long paymentId, Long userId) {
@@ -79,7 +88,10 @@ public class PaymentService {
 
         payment.complete();
         payment.getReservation().confirm();
-        payment.getReservation().getParkingSpot().resetStatus();
+
+        // 주차자리 PAYING → AVAILABLE로 변경
+        parkingSpotRepository.completePayment(
+                payment.getReservation().getParkingSpot().getId());
 
         log.info("결제 승인 완료 - paymentId: {}", paymentId);
         return PaymentRespDto.from(payment);
@@ -129,7 +141,10 @@ public class PaymentService {
         validateRefundStatus(payment);
 
         payment.refund();
-        payment.getReservation().getParkingSpot().resetStatus();
+
+        // 환불 시 주차자리 AVAILABLE로 복원
+        parkingSpotRepository.completePayment(
+                payment.getReservation().getParkingSpot().getId());
 
         log.info("환불 완료 - paymentId: {}", paymentId);
         return PaymentRespDto.from(payment);
