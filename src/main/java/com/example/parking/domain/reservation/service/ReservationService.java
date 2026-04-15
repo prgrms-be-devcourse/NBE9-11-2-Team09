@@ -150,7 +150,7 @@
                 // 💡 자기 자신의 프록시를 가져와서 호출해야 @Transactional이 정상 작동합니다.
                 ReservationService self = reservationServiceProvider.getObject();
                 self.cancelIfUnpaid(reservationId);
-            }, Instant.now().plusSeconds(50));
+            }, Instant.now().plusSeconds(300);
             log.info("[예약 생성] 50초 타이머 작동 시작 - 예약 ID: {}", reservationId);
 
             return ReservationResDto.from(savedReservation);
