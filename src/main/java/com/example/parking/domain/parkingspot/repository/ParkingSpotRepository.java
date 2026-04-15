@@ -40,4 +40,10 @@ public interface ParkingSpotRepository extends JpaRepository<ParkingSpot, Long> 
     @Query("UPDATE ParkingSpot p SET p.status = 'AVAILABLE', p.reservedAt = null " +
             "WHERE p.id = :id AND p.status = 'PAYING'")
     int completePayment(@Param("id") Long id);
+
+    // [CUS-05] 결제 실패: PAYING → AVAILABLE
+    @Modifying(clearAutomatically = true, flushAutomatically = true)
+    @Query("UPDATE ParkingSpot p SET p.status = 'AVAILABLE', p.reservedAt = null " +
+            "WHERE p.id = :id AND p.status = 'PAYING'")
+    int failPayment(@Param("id") Long id);
 }
