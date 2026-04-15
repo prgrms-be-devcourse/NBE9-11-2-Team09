@@ -73,16 +73,6 @@ public class ParkingSpot {
 //        this.reservedAt = null;
 //    }
 
-    public void startPayment() {
-        this.status = SpotStatus.PAYING;
-        this.paymentStartedAt = LocalDateTime.now();
-    }
-
-    public void resetStatus() {
-        this.status = SpotStatus.AVAILABLE;
-        this.reservedAt = null;
-        this.paymentStartedAt = null;
-    }
 
     public void confirmReservation() {
         this.reservedAt = null;  // 스케줄러가 건드리지 않도록
