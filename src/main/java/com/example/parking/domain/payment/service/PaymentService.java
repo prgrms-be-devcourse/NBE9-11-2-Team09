@@ -1,6 +1,5 @@
 package com.example.parking.domain.payment.service;
 
-import com.example.parking.domain.parkingspot.entity.SpotStatus;
 import com.example.parking.domain.payment.dto.PaymentAdminRespDto;
 import com.example.parking.domain.payment.dto.PaymentReqDto;
 import com.example.parking.domain.payment.dto.PaymentRespDto;
@@ -77,13 +76,6 @@ public class PaymentService {
                 .reservation(reservation)
                 .amount(expectedAmount)
                 .build();
-
-        // 결제가 성공했으므로, 5분간 홀딩(OCCUPIED)했던 자리를 다시 이용 가능(AVAILABLE)으로 풉니다.
-        // 그래야 다른 사람이 내가 예약한 시간 외의 '다른 시간대'를 예약할 수 있습니다.
-        reservation.getParkingSpot().updateStatus(SpotStatus.AVAILABLE);
-
-        // 예약 상태를 PENDING -> CONFIRMED(확정)로 변경합니다.
-        reservation.confirm();
 
         return PaymentRespDto.from(paymentRepository.save(payment));
     }
