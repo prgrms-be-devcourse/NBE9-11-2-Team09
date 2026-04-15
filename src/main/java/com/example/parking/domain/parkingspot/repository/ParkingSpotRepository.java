@@ -20,18 +20,32 @@ public interface ParkingSpotRepository extends JpaRepository<ParkingSpot, Long> 
     @Query("SELECT p FROM ParkingSpot p WHERE p.id = :spotId")
     Optional<ParkingSpot> findByIdWithLock(@Param("spotId") Long spotId);
 
-    // [CUS-11] 동시성 제어
+    // [CUS-11] OCCUPIED 인 parkingSpot을 조회
     List<ParkingSpot> findByStatusAndReservedAtBefore(SpotStatus status, LocalDateTime time);
 
-//    // [3] 추가: 결제 완료 처리 (CAS 방식)
-//    @Modifying(clearAutomatically = true)
-//    @Query("UPDATE ParkingSpot p SET p.status = 'RESERVED' " +
-//        "WHERE p.id = :id AND p.status = 'OCCUPIED'")
-//    int completePayment(@Param("id") Long id);
 
-    // [4] 추가: 스케줄러의 만료 처리 (CAS 방식)
+    // [CUS-11] 추가: 스케줄러의 만료 처리 (CAS 방식)
     @Modifying(clearAutomatically = true)
     @Query("UPDATE ParkingSpot p SET p.status = 'AVAILABLE', p.reservedAt = null " +
+        "WHERE p.id = :id AND p.status = 'OCCUPIED' AND p.reservedAt < :expiredTime")
+    int releaseExpiredSpot(@Param("id") Long id, @Param("expiredTime") LocalDateTime expiredTime);
+
+
+    // [CUS-05] 결제 시작: OCCUPIED → PAYING
+    @Modifying(clearAutomatically = true)
+    @Query("UPDATE ParkingSpot p SET p.status = 'PAYING' " +
         "WHERE p.id = :id AND p.status = 'OCCUPIED'")
-    int releaseExpiredSpot(@Param("id") Long id);
+    int startPayment(@Param("id") Long id);
+
+    // [CUS-05] 결제 완료: PAYING → AVAILABLE
+    @Modifying(clearAutomatically = true)
+    @Query("UPDATE ParkingSpot p SET p.status = 'AVAILABLE', p.reservedAt = null " +
+        "WHERE p.id = :id AND p.status = 'PAYING'")
+    int completePayment(@Param("id") Long id);
+
+    // [CUS-05] 결제 실패: PAYING → OCCUPIED (결제 실패시 롤백)
+    @Modifying(clearAutomatically = true)
+    @Query("UPDATE ParkingSpot p SET p.status = 'OCCUPIED' " +
+        "WHERE p.id = :id AND p.status = 'PAYING'")
+    int failPayment(@Param("id") Long id);
 }

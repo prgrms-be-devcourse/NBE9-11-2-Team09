@@ -31,15 +31,15 @@ public class ParkingSpotScheduler {
 
     for (ParkingSpot spot : expiredSpots) {
       // [CUS-11] 원자적 업데이트 시도 (CAS 방식)
-      // DB에서 여전히 OCCUPIED일 때만 AVAILABLE로 바꿉니다.
-      int updatedCount = parkingSpotRepository.releaseExpiredSpot(spot.getId());
+      // DB에서 여전히 OCCUPIED이고 시간이 만료됐을 때만 AVAILABLE로 바꿉니다.
+      int updatedCount = parkingSpotRepository.releaseExpiredSpot(spot.getId(), deadline);
 
-      // 3. 업데이트에 성공했을 때만 알림 발송
-      // updatedCount가 0이라면, 그 찰나에 사용자가 결제해서 RESERVED로 바뀐 것입니다.
+      // [CUS-11] 업데이트에 성공했을 때만 알림 발송
+      // updatedCount가 0이라면, 그 찰나에 사용자가 결제해서 AVAILABLE로 바뀐 것입니다.
       if (updatedCount > 0) {
         sseEmitterManager.notify(
             spot.getParkingLot().getId(),
-            new ParkingSpotDto(spot) // clearAutomatically=true 덕분에 최신 상태가 반영됨
+            new ParkingSpotDto(spot)
         );
       }
     }
