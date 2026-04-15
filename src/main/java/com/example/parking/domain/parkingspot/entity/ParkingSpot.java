@@ -40,8 +40,8 @@ public class ParkingSpot {
     @Column(name = "reserved_at")
     private LocalDateTime reservedAt;
 
-    @Column(name = "payment_started_at")
-    private LocalDateTime paymentStartedAt;
+//    @Column(name = "payment_started_at")
+//    private LocalDateTime paymentStartedAt;
 
     @Builder
     public ParkingSpot(ParkingLot parkingLot, String number, SpotType type) {
@@ -73,6 +73,17 @@ public class ParkingSpot {
 //        this.reservedAt = null;
 //    }
 
+
+    public void updateStatus(SpotStatus status) {
+        this.status = status;
+
+        // 💡 자리를 선점(OCCUPIED)할 때만 시간을 기록하고, 그 외에는 초기화합니다.
+        if (status == SpotStatus.OCCUPIED) {
+            this.reservedAt = LocalDateTime.now();
+        } else {
+            this.reservedAt = null;
+        }
+    }
 
 
 }
