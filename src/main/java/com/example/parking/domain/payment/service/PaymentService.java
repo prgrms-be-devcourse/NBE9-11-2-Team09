@@ -90,8 +90,14 @@ public class PaymentService {
         payment.getReservation().confirm();
 
         // 주차자리 PAYING → AVAILABLE로 변경
-        parkingSpotRepository.completePayment(
+        int updatedCount = parkingSpotRepository.completePayment(
                 payment.getReservation().getParkingSpot().getId());
+
+        if (updatedCount == 0) {
+            log.warn("결제 승인 실패 - 주차자리 상태 변경 실패 spotId: {}",
+                    payment.getReservation().getParkingSpot().getId());
+            throw new IllegalStateException("결제 승인을 할 수 없는 상태입니다.");
+        }
 
         log.info("결제 승인 완료 - paymentId: {}", paymentId);
         return PaymentRespDto.from(payment);
@@ -143,8 +149,14 @@ public class PaymentService {
         payment.refund();
 
         // 환불 시 주차자리 AVAILABLE로 복원
-        parkingSpotRepository.completePayment(
+        int updatedCount = parkingSpotRepository.completePayment(
                 payment.getReservation().getParkingSpot().getId());
+
+        if (updatedCount == 0) {
+            log.warn("환불 실패 - 주차자리 상태 변경 실패 spotId: {}",
+                    payment.getReservation().getParkingSpot().getId());
+            throw new IllegalStateException("환불을 처리할 수 없는 상태입니다.");
+        }
 
         log.info("환불 완료 - paymentId: {}", paymentId);
         return PaymentRespDto.from(payment);

@@ -1,6 +1,6 @@
 package com.example.parking.domain.payment.scheduler;
 
-import com.example.parking.domain.parkingspot.entity.SpotStatus;
+import com.example.parking.domain.parkingspot.repository.ParkingSpotRepository;
 import com.example.parking.domain.payment.entity.Payment;
 import com.example.parking.domain.payment.entity.PaymentStatus;
 import com.example.parking.domain.payment.repository.PaymentRepository;
@@ -19,6 +19,7 @@ import java.util.List;
 public class PaymentScheduler {
 
     private final PaymentRepository paymentRepository;
+    private final ParkingSpotRepository parkingSpotRepository;
 
     @Scheduled(fixedDelay = 60000) // 1분마다 실행
     @Transactional
@@ -30,7 +31,8 @@ public class PaymentScheduler {
 
         for (Payment payment : expiredPayments) {
             payment.fail();
-            payment.getReservation().getParkingSpot().updateStatus(SpotStatus.OCCUPIED);
+            parkingSpotRepository.failPayment(
+                    payment.getReservation().getParkingSpot().getId());
             log.info("결제 만료 처리 - paymentId: {}", payment.getId());
         }
     }

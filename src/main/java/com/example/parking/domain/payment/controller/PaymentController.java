@@ -7,11 +7,8 @@ import com.example.parking.global.security.CustomUserDetails;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequiredArgsConstructor
@@ -21,7 +18,7 @@ public class PaymentController {
     private final PaymentService paymentService;
 
     /**
-     * CUS-05: 결제
+     * CUS-05: 결제 시작
      */
     @PostMapping
     public ResponseEntity<PaymentRespDto> startPayment(
@@ -29,6 +26,18 @@ public class PaymentController {
             @AuthenticationPrincipal CustomUserDetails userDetails) {
         return ResponseEntity.ok(
                 paymentService.startPayment(request, userDetails.getUserId())
+        );
+    }
+
+    /**
+     * CUS-05: 결제 승인
+     */
+    @PostMapping("/{paymentId}/approve")
+    public ResponseEntity<PaymentRespDto> approvePayment(
+            @PathVariable Long paymentId,
+            @AuthenticationPrincipal CustomUserDetails userDetails) {
+        return ResponseEntity.ok(
+                paymentService.approvePayment(paymentId, userDetails.getUserId())
         );
     }
 }

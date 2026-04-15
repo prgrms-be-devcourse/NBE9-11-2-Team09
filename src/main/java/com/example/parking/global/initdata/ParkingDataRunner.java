@@ -64,6 +64,8 @@ public class ParkingDataRunner implements CommandLineRunner {
                 .number("A-01")
                 .type(SpotType.SMALL)
                 .build());
+        // 예약 생성 시 주차자리 OCCUPIED로 변경
+        parkingSpot.reserve();
 
         // 4. PENDING 예약
         reservationRepository.save(Reservation.builder()
