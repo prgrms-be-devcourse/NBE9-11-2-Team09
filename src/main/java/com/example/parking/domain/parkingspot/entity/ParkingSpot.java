@@ -90,6 +90,6 @@ public class ParkingSpot {
 
 
     public void updateStatus(SpotStatus spotStatus) {
-        this.status = status;
+        this.status = spotStatus;  // spotStatus로 변경
     }
 }

@@ -4,6 +4,9 @@ import com.example.parking.domain.parkingspot.dto.ParkingSpotDto;
 import com.example.parking.domain.parkingspot.entity.ParkingSpot;
 import com.example.parking.domain.parkingspot.entity.SpotStatus;
 import com.example.parking.domain.parkingspot.repository.ParkingSpotRepository;
+import com.example.parking.domain.payment.entity.Payment;
+import com.example.parking.domain.payment.entity.PaymentStatus;
+import com.example.parking.domain.payment.repository.PaymentRepository;
 import com.example.parking.global.sse.SseEmitterManager;
 import lombok.RequiredArgsConstructor;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -13,12 +16,17 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 import java.util.List;
 
+import com.example.parking.domain.payment.repository.PaymentRepository;
+import com.example.parking.domain.payment.entity.Payment;
+import com.example.parking.domain.payment.entity.PaymentStatus;
+
 @Component
 @RequiredArgsConstructor
 public class ParkingSpotScheduler {
 
   private final ParkingSpotRepository parkingSpotRepository;
   private final SseEmitterManager sseEmitterManager;
+  private final PaymentRepository paymentRepository;
 
   @Scheduled(fixedDelay = 60000) // 1분마다 실행
   @Transactional
@@ -54,6 +62,9 @@ public class ParkingSpotScheduler {
 
       // [CUS-05] 성공했다면 SSE 알림 전송
       if (updatedCount > 0) {
+        paymentRepository.findByReservationParkingSpotIdAndStatus(
+                        spot.getId(), PaymentStatus.PROCESSING)
+                .ifPresent(Payment::fail);
         sseEmitterManager.notify(spot.getParkingLot().getId(), new ParkingSpotDto(spot));
       }
     }

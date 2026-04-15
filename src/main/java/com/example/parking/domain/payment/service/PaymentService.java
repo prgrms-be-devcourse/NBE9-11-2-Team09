@@ -1,6 +1,5 @@
 package com.example.parking.domain.payment.service;
 
-import com.example.parking.domain.parkingspot.entity.SpotStatus;
 import com.example.parking.domain.payment.dto.PaymentAdminRespDto;
 import com.example.parking.domain.payment.dto.PaymentReqDto;
 import com.example.parking.domain.payment.dto.PaymentRespDto;
@@ -47,7 +46,7 @@ public class PaymentService {
                 .build();
 
         // 결제 시작 시 주차자리 PAYING으로 변경
-        reservation.getParkingSpot().updateStatus(SpotStatus.PAYING);
+        reservation.getParkingSpot().startPayment();
 
         log.info("결제 시작 - reservationId: {}, userId: {}", request.getReservationId(), userId);
         return PaymentRespDto.from(paymentRepository.save(payment));
@@ -80,7 +79,7 @@ public class PaymentService {
 
         payment.complete();
         payment.getReservation().confirm();
-        payment.getReservation().getParkingSpot().updateStatus(SpotStatus.AVAILABLE);
+        payment.getReservation().getParkingSpot().resetStatus();
 
         log.info("결제 승인 완료 - paymentId: {}", paymentId);
         return PaymentRespDto.from(payment);
@@ -116,7 +115,7 @@ public class PaymentService {
     /**
      * ADM-01: 환불 처리
      * - COMPLETE 상태만 환불 가능
-     * - 환불 시 주차자리 OCCUPIED로 복원
+     * - 환불 시 주차자리 AVAILABLE로 복원
      */
     @Transactional
     public PaymentRespDto refundPayment(Long paymentId) {
@@ -130,7 +129,7 @@ public class PaymentService {
         validateRefundStatus(payment);
 
         payment.refund();
-        payment.getReservation().getParkingSpot().updateStatus(SpotStatus.OCCUPIED);
+        payment.getReservation().getParkingSpot().resetStatus();
 
         log.info("환불 완료 - paymentId: {}", paymentId);
         return PaymentRespDto.from(payment);
