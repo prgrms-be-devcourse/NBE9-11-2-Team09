@@ -1,7 +1,7 @@
 package com.example.parking.domain.parkingLot.service;
 
 import com.example.parking.domain.parkingLot.entity.ParkingLot;
-import com.example.parking.domain.parkingLot.external.ParkingOpenApiClient;
+import com.example.parking.domain.parkingLot.external.client.ParkingOpenApiClient;
 import com.example.parking.domain.parkingLot.external.dto.ParkingApiDto;
 import com.example.parking.domain.parkingLot.repository.ParkingLotRepository;
 import com.example.parking.domain.parkingspot.service.ParkingSpotService;
