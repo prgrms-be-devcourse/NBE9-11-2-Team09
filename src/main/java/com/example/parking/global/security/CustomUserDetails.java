@@ -13,40 +13,50 @@ import java.util.List;
 @Getter
 public class CustomUserDetails implements UserDetails {
 
-    // [CUS-08] 로그인 - 로그인 시 이메일로 사용자 조회 후 CustomUserDetails 객체 생성
-    private final User user;
+    private final Long userId;
+    private final String userEmail;
+    private final String role;
 
     // UserDetails 인터페이스 구현
-    public CustomUserDetails(User user) {
-        this.user = user;
-    }
-
-    public Long getUserId() {
-        return user.getId();
-    }
-
-    public String getUserEmail() {
-        return user.getEmail();
+    public CustomUserDetails(Long userId, String userEmail, String role) {
+        this.userId = userId;
+        this.userEmail = userEmail;
+        this.role = role;
     }
 
     // [CUS-08] 로그인 - 계정이 활성화되어 있는지 여부
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return List.of(new SimpleGrantedAuthority("ROLE_" + user.getRole().name()));
+        return List.of(new SimpleGrantedAuthority("ROLE_" + role));
     }
 
     @Override
     public String getPassword() {
-        return user.getPassword();
+        return null;
     }
 
     @Override
     public String getUsername() {
-        return user.getEmail();
+        return userEmail;
+    }
+
+    @Override
+    public boolean isAccountNonExpired() {
+        return true;
+    }
+
+    @Override
+    public boolean isAccountNonLocked() {
+        return true;
+    }
+
+    @Override
+    public boolean isCredentialsNonExpired() {
+        return true;
     }
 
     @Override
     public boolean isEnabled() {
-        return user.getStatus() == UserStatus.ACTIVE;
+        return true;
     }
 }
