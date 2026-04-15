@@ -24,11 +24,10 @@ public interface ParkingSpotRepository extends JpaRepository<ParkingSpot, Long> 
     List<ParkingSpot> findByStatusAndReservedAtBefore(SpotStatus status, LocalDateTime time);
 
     // [CUS-11] 스케줄러의 만료 처리 (CAS 방식)
-    @Modifying(clearAutomatically = true)
+    @Modifying(clearAutomatically = true, flushAutomatically = true)
     @Query("UPDATE ParkingSpot p SET p.status = 'AVAILABLE', p.reservedAt = null " +
             "WHERE p.id = :id AND p.status = 'OCCUPIED' AND p.reservedAt < :expiredTime")
     int releaseExpiredSpot(@Param("id") Long id, @Param("expiredTime") LocalDateTime expiredTime);
-
 
     // [CUS-05] 결제 시작: OCCUPIED → PAYING
     @Modifying(clearAutomatically = true, flushAutomatically = true)
@@ -36,15 +35,9 @@ public interface ParkingSpotRepository extends JpaRepository<ParkingSpot, Long> 
             "WHERE p.id = :id AND p.status = 'OCCUPIED'")
     int startPayment(@Param("id") Long id);
 
-    // [CUS-05] 결제 완료: PAYING → AVAILABLE
+    // [CUS-05] 결제 완료/만료/환불: PAYING → AVAILABLE
     @Modifying(clearAutomatically = true, flushAutomatically = true)
     @Query("UPDATE ParkingSpot p SET p.status = 'AVAILABLE', p.reservedAt = null " +
             "WHERE p.id = :id AND p.status = 'PAYING'")
     int completePayment(@Param("id") Long id);
-
-    // [CUS-05] 결제 실패: PAYING → OCCUPIED
-    @Modifying(clearAutomatically = true)
-    @Query("UPDATE ParkingSpot p SET p.status = 'OCCUPIED' " +
-            "WHERE p.id = :id AND p.status = 'PAYING'")
-    int failPayment(@Param("id") Long id);
 }
