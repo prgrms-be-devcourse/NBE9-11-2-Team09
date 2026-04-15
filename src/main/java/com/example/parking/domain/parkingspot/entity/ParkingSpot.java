@@ -40,8 +40,8 @@ public class ParkingSpot {
     @Column(name = "reserved_at")
     private LocalDateTime reservedAt;
 
-    @Column(name = "payment_started_at")
-    private LocalDateTime paymentStartedAt;
+//    @Column(name = "payment_started_at")
+//    private LocalDateTime paymentStartedAt;
 
     @Builder
     public ParkingSpot(ParkingLot parkingLot, String number, SpotType type) {
