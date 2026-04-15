@@ -138,6 +138,21 @@ public class UserService {
         return UserProfileResDto.from(user);
     }
 
+    // [ADM-05] 관리자 권한으로 전체 고객 목록 조회 - 이름 또는 이메일 키워드로 검색 가능, 페이징 처리
+    public Page<AdminUserResDto> getAdminUsers(String keyword, Pageable pageable) {
+        if (keyword == null || keyword.isBlank()) {
+            return userRepository.findAll(pageable)
+                    .map(AdminUserResDto::from);
+        }
+
+        return userRepository.findByNameContainingIgnoreCaseOrEmailContainingIgnoreCase(
+                        keyword,
+                        keyword,
+                        pageable
+                )
+                .map(AdminUserResDto::from);
+    }
+
     // [CUS 07] 회원탈퇴 - 인증된 사용자의 비밀번호를 다시 확인한 뒤 soft delete 처리
     @Transactional
     public void withdraw(Long userId, WithdrawReqDto reqDto) {

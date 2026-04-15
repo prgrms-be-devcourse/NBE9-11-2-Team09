@@ -15,7 +15,7 @@ import java.util.List;
 public class ParkingLot {
 
     // 기본값 세팅
-    private static final Integer DEFAULT_PRICE = 0;
+    private static final Integer DEFAULT_PRICE = 1000;
     private static final LocalTime DEFAULT_OPERATION_START_TIME = LocalTime.MIN; // 00:00
     private static final LocalTime DEFAULT_OPERATION_END_TIME = LocalTime.of(23, 59);
 
