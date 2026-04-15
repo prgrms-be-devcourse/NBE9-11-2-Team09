@@ -79,4 +79,5 @@ public class Reservation {
     public void complete() {
         this.status = ReservationStatus.COMPLETED;
     }
+
 }
