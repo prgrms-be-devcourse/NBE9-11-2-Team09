@@ -2,7 +2,6 @@ package com.example.parking.domain.reservation.scheduler;
 
 import com.example.parking.domain.parkingspot.entity.SpotStatus;
 import com.example.parking.domain.reservation.entity.Reservation;
-import com.example.parking.domain.reservation.entity.ReservationStatus;
 import com.example.parking.domain.reservation.repository.ReservationRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -20,24 +19,32 @@ public class ReservationScheduler {
 
     private final ReservationRepository reservationRepository;
 
-    @Scheduled(cron = "10 * * * * *")
+    @Scheduled(cron = "*/10 * * * * *")
     @Transactional
-    public void cancelExpiredHoldings() {
-        LocalDateTime limit = LocalDateTime.now().minusSeconds(10);
+    public void handleReservationLifecycle() {
+        LocalDateTime now = LocalDateTime.now();
 
-        List<Reservation> expiredOnes = reservationRepository.findByStatusAndCreatedAtBefore(
-                ReservationStatus.PENDING, limit
-        );
+        // 1. [자동 입차] 시작 시간이 되었고 결제 완료된 건 -> PARKED
+        autoCheckIn(now);
 
-        for (Reservation res : expiredOnes) {
-            res.cancel(); // 예약 상태 CANCELED로 변경
+        // 2. [자동 출차] 종료 시간이 지난 건 -> AVAILABLE
+        autoCheckOut(now);
+    }
 
-            // 자리가 OCCUPIED(홀딩) 상태인 경우에만 AVAILABLE로 해제
-            if (res.getParkingSpot().getStatus() == SpotStatus.OCCUPIED) {
-                res.getParkingSpot().updateStatus(SpotStatus.AVAILABLE);
-            }
+    private void autoCheckIn(LocalDateTime now) {
+        List<Reservation> toPark = reservationRepository.findToAutoPark(now);
+        for (Reservation res : toPark) {
+            res.getParkingSpot().updateStatus(SpotStatus.PARKED);
+            log.info("[자동 입차] 시작 시간 도달 - 자리 ID: {} -> PARKED", res.getParkingSpot().getId());
+        }
+    }
 
-            log.info("[스케줄러] 미결제 취소 및 자리 해제 완료 - 예약 ID: {}", res.getId());
+    private void autoCheckOut(LocalDateTime now) {
+        List<Reservation> toRelease = reservationRepository.findToRelease(now);
+        for (Reservation res : toRelease) {
+            res.getParkingSpot().updateStatus(SpotStatus.AVAILABLE);
+            res.complete();
+            log.info("[자동 출차] 종료 시간 도달 - 자리 ID: {} -> AVAILABLE", res.getParkingSpot().getId());
         }
     }
 }

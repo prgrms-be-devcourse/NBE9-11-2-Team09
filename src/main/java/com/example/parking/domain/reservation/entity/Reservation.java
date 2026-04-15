@@ -64,12 +64,19 @@ public class Reservation {
         this.status = ReservationStatus.PENDING;
     }
 
+    //예약 상태를 cancel로 변경
     public void cancel() {
         this.status = ReservationStatus.CANCELED;
         this.canceledAt = LocalDateTime.now();
     }
 
+    //예약 상태를 CONFIRMED로 변경
     public void confirm() {
         this.status = ReservationStatus.CONFIRMED;
+    }
+
+    //예약 상태를 COMPLETED로 변경
+    public void complete() {
+        this.status = ReservationStatus.COMPLETED;
     }
 }

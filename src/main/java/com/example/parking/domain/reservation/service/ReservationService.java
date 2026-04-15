@@ -13,13 +13,19 @@
     import com.example.parking.domain.user.entity.User;
     import com.example.parking.domain.user.repository.UserRepository;
     import lombok.RequiredArgsConstructor;
+    import lombok.extern.slf4j.Slf4j;
+    import org.springframework.beans.factory.ObjectProvider;
+    import org.springframework.scheduling.TaskScheduler;
     import org.springframework.stereotype.Service;
     import org.springframework.transaction.annotation.Transactional;
 
+
+    import java.time.Instant;
     import java.time.LocalDateTime;
     import java.util.List;
     import java.util.stream.Collectors;
 
+    @Slf4j
     @Service
     @RequiredArgsConstructor
     @Transactional(readOnly = true)
@@ -29,6 +35,8 @@
         private final ParkingLotRepository parkingLotRepository;
         private final ParkingSpotRepository parkingSpotRepository;
         private final ReservationRepository reservationRepository;
+        private final TaskScheduler taskScheduler; // 💡 1. TaskScheduler 주입
+        private final ObjectProvider<ReservationService> reservationServiceProvider;
 
         // [CUS-04] 예약 관리 - 내 예약 목록 조회
         public List<ReservationResDto> getMyReservations(Long userId, ReservationStatus status) {
@@ -135,7 +143,30 @@
                     .build();
 
             Reservation savedReservation = reservationRepository.save(newReservation);
+            Long reservationId = savedReservation.getId(); // ID 추출
+
+            // 💡 2. [실시간 취소 예약] 10초 뒤에 아래 cancelIfUnpaid 메서드를 실행합니다.
+            taskScheduler.schedule(() -> {
+                // 💡 자기 자신의 프록시를 가져와서 호출해야 @Transactional이 정상 작동합니다.
+                ReservationService self = reservationServiceProvider.getObject();
+                self.cancelIfUnpaid(reservationId);
+            }, Instant.now().plusSeconds(10));
+            log.info("[예약 생성] 10초 타이머 작동 시작 - 예약 ID: {}", reservationId);
 
             return ReservationResDto.from(savedReservation);
+        }
+
+        @Transactional // 💡 반드시 별도의 트랜잭션으로 실행되어야 함
+        public void cancelIfUnpaid(Long reservationId) {
+            // 💡 findById 대신 새로 만든 Fetch Join 메서드 사용
+            reservationRepository.findByIdWithParkingSpot(reservationId).ifPresent(res -> {
+                if (res.getStatus() == ReservationStatus.PENDING) {
+                    res.cancel();
+                    if (res.getParkingSpot().getStatus() == SpotStatus.OCCUPIED) {
+                        res.getParkingSpot().updateStatus(SpotStatus.AVAILABLE);
+                    }
+                    log.info("[실시간 취소 완료] 예약 ID: {}", reservationId);
+                }
+            });
         }
     }

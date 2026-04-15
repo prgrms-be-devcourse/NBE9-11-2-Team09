@@ -42,4 +42,17 @@ public interface ReservationRepository extends JpaRepository<Reservation, Long> 
     );
 
     List<Reservation> findByStatusAndCreatedAtBefore(ReservationStatus status, LocalDateTime time);
+
+    // 시작 시간은 지났고, 아직 자리는 AVAILABLE인 결제 완료 건 찾기
+    @Query("SELECT r FROM Reservation r JOIN FETCH r.parkingSpot s " +
+            "WHERE r.status = 'CONFIRMED' AND r.startTime <= :now AND s.status = 'AVAILABLE'")
+    List<Reservation> findToAutoPark(@Param("now") LocalDateTime now);
+
+    // 종료 시간이 지났고, 현재 자리가 PARKED인 건 찾기
+    @Query("SELECT r FROM Reservation r JOIN FETCH r.parkingSpot s " +
+            "WHERE r.endTime <= :now AND s.status = 'PARKED'")
+    List<Reservation> findToRelease(@Param("now") LocalDateTime now);
+
+    @Query("SELECT r FROM Reservation r JOIN FETCH r.parkingSpot WHERE r.id = :id")
+    Optional<Reservation> findByIdWithParkingSpot(@Param("id") Long id);
 }
