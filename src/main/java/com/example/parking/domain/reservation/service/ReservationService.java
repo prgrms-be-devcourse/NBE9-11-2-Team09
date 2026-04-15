@@ -74,6 +74,9 @@
 
             reservation.cancel();
 
+
+            reservation.getParkingSpot().release();
+
             // TODO: 원석님(결제) 환불 로직 연동
             // TODO: 현태님(자리) 상태 AVAILABLE 변경 로직 연동
         }
@@ -167,7 +170,7 @@
                 if (res.getStatus() == ReservationStatus.PENDING) {
                     res.cancel();
                     if (res.getParkingSpot().getStatus() == SpotStatus.OCCUPIED) {
-                        res.getParkingSpot().updateStatus(SpotStatus.AVAILABLE);
+                        res.getParkingSpot().release();
                     }
                     log.info("[실시간 취소 완료] 예약 ID: {}", reservationId);
                 }
