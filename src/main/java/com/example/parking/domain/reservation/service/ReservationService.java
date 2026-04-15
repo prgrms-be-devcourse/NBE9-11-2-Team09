@@ -5,6 +5,7 @@
     import com.example.parking.domain.parkingspot.entity.ParkingSpot;
     import com.example.parking.domain.parkingspot.entity.SpotStatus;
     import com.example.parking.domain.parkingspot.repository.ParkingSpotRepository;
+    import com.example.parking.domain.parkingspot.service.ParkingSpotService;
     import com.example.parking.domain.reservation.dto.ReservationReqDto;
     import com.example.parking.domain.reservation.dto.ReservationResDto;
     import com.example.parking.domain.reservation.entity.Reservation;
@@ -18,7 +19,6 @@
     import org.springframework.scheduling.TaskScheduler;
     import org.springframework.stereotype.Service;
     import org.springframework.transaction.annotation.Transactional;
-
 
     import java.time.Instant;
     import java.time.LocalDateTime;
@@ -34,6 +34,7 @@
         private final UserRepository userRepository;
         private final ParkingLotRepository parkingLotRepository;
         private final ParkingSpotRepository parkingSpotRepository;
+        private final ParkingSpotService parkingSpotService;
         private final ReservationRepository reservationRepository;
         private final TaskScheduler taskScheduler; // 💡 1. TaskScheduler 주입
         private final ObjectProvider<ReservationService> reservationServiceProvider;
@@ -102,6 +103,7 @@
             ParkingSpot parkingSpot = parkingSpotRepository.findByIdWithLock(reqDto.parkingSpotId())
                     .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 주차 자리입니다."));
 
+
             // 💡 수정된 부분 1: 현재 자리가 누군가 결제 중(OCCUPIED)인지 먼저 확인합니다.
             if (parkingSpot.getStatus() == SpotStatus.OCCUPIED) {
                 throw new IllegalStateException("현재 다른 사용자가 결제 진행 중인 자리입니다. 잠시 후 다시 시도해주세요.");
@@ -130,7 +132,9 @@
             }
 
             // 💡 수정된 부분 2: 검증을 모두 통과했으므로 자리를 5분간 홀딩(OCCUPIED) 상태로 변경합니다.
-            parkingSpot.updateStatus(SpotStatus.OCCUPIED);
+//            parkingSpot.updateStatus(SpotStatus.OCCUPIED);
+            parkingSpotService.reserve(parkingSpot);
+
 
             // 6. 예약 엔티티 생성 및 저장
             Reservation newReservation = Reservation.builder()
