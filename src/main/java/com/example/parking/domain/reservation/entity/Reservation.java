@@ -64,6 +64,13 @@ public class Reservation {
         this.status = ReservationStatus.PENDING;
     }
 
+    private LocalDateTime paymentRequestedAt; // 결제 버튼 클릭 시점
+
+    //결제 호출하기
+    public void startPayment() {
+        this.paymentRequestedAt = LocalDateTime.now();
+    }
+
     //예약 상태를 cancel로 변경
     public void cancel() {
         this.status = ReservationStatus.CANCELED;

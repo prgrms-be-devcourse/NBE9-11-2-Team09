@@ -152,7 +152,7 @@
             Reservation savedReservation = reservationRepository.save(newReservation);
             Long reservationId = savedReservation.getId(); // ID 추출
 
-            // 💡 2. [실시간 취소 예약] 50초 뒤에 아래 cancelIfUnpaid 메서드를 실행합니다.
+            // 💡 2. [실시간 취소 예약] 5분 뒤에 아래 cancelIfUnpaid 메서드를 실행합니다.
             taskScheduler.schedule(() -> {
                 // 💡 자기 자신의 프록시를 가져와서 호출해야 @Transactional이 정상 작동합니다.
                 ReservationService self = reservationServiceProvider.getObject();
@@ -176,4 +176,26 @@
                 }
             });
         }
+        // [Step 2] 결제 프로세스 진입 (결제 팀이 호출)
+        @Transactional
+        public void startPaymentProcess(Long reservationId) {
+            Reservation res = reservationRepository.findByIdWithParkingSpot(reservationId)
+                    .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 예약입니다."));
+
+            res.startPayment(); // paymentRequestedAt 기록
+            res.getParkingSpot().updateStatus(SpotStatus.PAYING); // OCCUPIED -> PAYING
+            log.info("[결제 시작] 예약 ID: {}, 자리 상태: PAYING", reservationId);
+        }
+
+        // [Step 3] 결제 최종 성공 (결제 팀이 호출)
+        @Transactional
+        public void completePayment(Long reservationId) {
+            Reservation res = reservationRepository.findByIdWithParkingSpot(reservationId)
+                    .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 예약입니다."));
+
+            res.confirm(); // PENDING -> CONFIRMED
+            res.getParkingSpot().release(); // PAYING -> AVAILABLE (물리적 자리 개방)
+            log.info("[결제 완료] 예약 ID: {}, 자리 상태: AVAILABLE (시간 선점 완료)", reservationId);
+        }
+
     }

@@ -37,4 +37,4 @@ spring:
 # 5. 서울 주차장 Open API 키
 openapi:
   seoul:
-    key: ${SEOUL_API_KEY}
+    key: 7a44464570686a7933366e5743504f

@@ -44,16 +44,6 @@ public interface ReservationRepository extends JpaRepository<Reservation, Long> 
     );
 
 
-    // 시작 시간은 지났고, 아직 자리는 AVAILABLE인 결제 완료 건 찾기
-    @Query("SELECT r FROM Reservation r JOIN FETCH r.parkingSpot s " +
-            "WHERE r.status = 'CONFIRMED' AND r.startTime <= :now AND s.status = 'AVAILABLE'")
-    List<Reservation> findToAutoPark(@Param("now") LocalDateTime now);
-
-    // 종료 시간이 지났고, 현재 자리가 PARKED인 건 찾기
-    @Query("SELECT r FROM Reservation r JOIN FETCH r.parkingSpot s " +
-            "WHERE r.endTime <= :now AND s.status = 'PARKED'")
-    List<Reservation> findToRelease(@Param("now") LocalDateTime now);
-
     @Query("SELECT r FROM Reservation r JOIN FETCH r.parkingSpot WHERE r.id = :id")
     Optional<Reservation> findByIdWithParkingSpot(@Param("id") Long id);
 
@@ -67,4 +57,28 @@ public interface ReservationRepository extends JpaRepository<Reservation, Long> 
             countQuery = "SELECT count(r) FROM Reservation r")
     Page<Reservation> findAllWithDetailsPage(Pageable pageable);
 
+    // 1. [자동 입차 대상] 결제 완료(CONFIRMED) 상태이고 시작 시간이 현재 시간보다 이전인 예약
+    @Query("SELECT r FROM Reservation r JOIN FETCH r.parkingSpot " +
+            "WHERE r.status = 'CONFIRMED' AND r.startTime <= :now")
+    List<Reservation> findToAutoCheckIn(@Param("now") LocalDateTime now);
+
+    // 2. [자동 출차 대상] 이미 입차(COMPLETED) 상태이고 종료 시간이 현재 시간보다 이전인 예약
+// 주차 자리가 여전히 OCCUPIED인 경우만 골라냅니다.
+    @Query("SELECT r FROM Reservation r JOIN FETCH r.parkingSpot " +
+            "WHERE r.status = 'COMPLETED' AND r.endTime <= :now " +
+            "AND r.parkingSpot.status = 'OCCUPIED'")
+    List<Reservation> findToAutoCheckOut(@Param("now") LocalDateTime now);
+
+    // 3. [1차 선점 타임아웃] PENDING 상태이며 결제 요청 기록 없이 5분이 지난 예약 (기존 파일에 있는 내용 확인)
+    @Query("SELECT r FROM Reservation r JOIN FETCH r.parkingSpot " +
+            "WHERE r.status = 'PENDING' AND r.paymentRequestedAt IS NULL AND r.createdAt < :limit")
+    List<Reservation> findSelectionTimeout(@Param("limit") LocalDateTime limit);
+
+    // 중복 예약 방지 쿼리 (PENDING, CONFIRMED 모두 체크)
+    @Query("SELECT COUNT(r) FROM Reservation r WHERE r.parkingSpot.id = :spotId " +
+            "AND r.status IN ('PENDING', 'CONFIRMED') " +
+            "AND (:start < r.endTime AND :end > r.startTime)")
+    long countOverlapping(@Param("spotId") Long spotId,
+                          @Param("start") LocalDateTime start,
+                          @Param("end") LocalDateTime end);
 }
