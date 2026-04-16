@@ -159,15 +159,16 @@
                 throw new IllegalStateException("방금 다른 사용자가 선점했습니다. 다른 자리를 선택해주세요.");
             }
 
-            // 7. CAS 성공 후 영속성 컨텍스트 동기화
-            entityManager.refresh(parkingSpot);  // 또는 다시 조회
+            // 7. CAS 성공 저장용 재조회 (영속 컨텍스트 문제 해결. CAS는 영속 컨텍스트를 비워버리므로)
+            ParkingSpot spot = parkingSpotRepository.findById(reqDto.parkingSpotId())
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 주차 자리입니다."));
 
 
             // 6. 예약 엔티티 생성 및 저장
             Reservation newReservation = Reservation.builder()
                     .user(user)
                     .parkingLot(parkingLot)
-                    .parkingSpot(parkingSpot)
+                    .parkingSpot(spot)
                     .startTime(start)
                     .endTime(end)
                     .status(ReservationStatus.PENDING)
