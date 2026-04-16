@@ -59,31 +59,47 @@
             return ReservationResDto.from(reservation);
         }
 
-        // [CUS-04] 예약 관리 - 예약 취소
         @Transactional
-        public void cancelReservation(Long reservationId, Long userId) {
-            Reservation reservation = reservationRepository.findByIdAndUserIdWithDetails(reservationId, userId)
-                    .orElseThrow(() -> new IllegalArgumentException("존재하지 않거나 이미 취소된 예약입니다."));
+        public void cancelReservation(Long reservationId, Long userId, boolean isForced) {
+            // 💡 Fetch Join으로 자리 정보까지 한 번에 가져옵니다.
+            Reservation reservation = reservationRepository.findByIdWithParkingSpot(reservationId)
+                    .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 예약입니다."));
 
-            // 1. 이미 취소된 예약인지 확인 (소프트 델리트 중복 방지)
-            if (reservation.getStatus() == ReservationStatus.CANCELED ) {
+            if (reservation.getStatus() == ReservationStatus.CANCELED) {
                 throw new IllegalStateException("이미 취소 처리된 예약입니다.");
             }
 
-            // 2. 권한 검증
-            if (!reservation.getUser().getId().equals(userId)) {
-                throw new IllegalArgumentException("해당 예약을 취소할 권한이 없습니다.");
+            // ✨ [검증] 관리자가 아닐 때만(isForced=false) 본인 확인 및 30분 정책 체크
+            if (!isForced) {
+                // 1. 권한 검증: 본인 예약인지 확인
+                if (userId == null || !reservation.getUser().getId().equals(userId)) {
+                    throw new IllegalArgumentException("해당 예약을 취소할 권한이 없습니다.");
+                }
+
+                // 2. 시간 검증: 입차 30분 전까지만 취소 가능
+                LocalDateTime now = LocalDateTime.now();
+                if (now.isAfter(reservation.getStartTime().minusMinutes(30))) {
+                    throw new IllegalStateException("입차 30분 전까지만 취소가 가능합니다.");
+                }
             }
 
+            // 3. 환불 처리: 결제가 완료된(CONFIRMED) 건은 환불 상태로 변경
+            if (reservation.getStatus() == ReservationStatus.CONFIRMED) {
+                paymentRepository.findByReservationId(reservationId).ifPresent(Payment::refund);
+                log.info("[환불] 예약 ID: {} - 환불 처리가 완료되었습니다.", reservationId);
+            }
+
+            // 4. 상태 변경 및 자리 반환
             reservation.cancel();
-
-
             reservation.getParkingSpot().release();
+            log.info("[취소 성공] 예약 ID: {}, 강제취소여부: {}", reservationId, isForced);
         }
 
         // [CUS-03] 예약 생성
         @Transactional
         public ReservationResDto createReservation(Long userId, ReservationReqDto reqDto) {
+
+            validateReservationOpenTime();
             // 1. DTO에서 안전하게 파싱된 시간을 가져옵니다.
             LocalDateTime start = reqDto.getParsedStartTime();
             LocalDateTime end = reqDto.getParsedEndTime();
@@ -206,28 +222,16 @@
                 log.info("[스킵] 주차자리가 이미 AVAILABLE 상태입니다: spotId {}", res.getParkingSpot().getId());
             }
         }
-        @Transactional
-        public void cancelWithRefund(Long reservationId, boolean isForced) {
-            Reservation res = reservationRepository.findByIdWithParkingSpot(reservationId)
-                    .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 예약입니다."));
 
+
+        private void validateReservationOpenTime() {
             LocalDateTime now = LocalDateTime.now();
 
-            // 💡 사용자가 직접 취소할 때만(isForced = false) 30분 제약 체크
-            if (!isForced) {
-                LocalDateTime cancelDeadLine = res.getStartTime().minusMinutes(30);
-                if (now.isAfter(cancelDeadLine)) {
-                    throw new IllegalStateException("입차 30분 전까지만 취소가 가능합니다.");
-                }
-            }
+            int hour = now.getHour();
 
-            // 환불 처리 (결제 완료 상태라면)
-            if (res.getStatus() == ReservationStatus.CONFIRMED) {
-                paymentRepository.findByReservationId(reservationId).ifPresent(Payment::refund);
+            if (hour < 14 || hour >= 24) {
+                throw new IllegalStateException("예약은 매일 22시부터 24시까지만 가능합니다.");
             }
-
-            // 예약 취소 및 자리 반환
-            res.cancel();
-            res.getParkingSpot().release();
         }
+
     }
