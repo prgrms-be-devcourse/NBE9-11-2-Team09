@@ -26,7 +26,7 @@ public class PaymentScheduler {
     @Scheduled(fixedDelay = 60000)
     @Transactional
     public void cancelExpiredPayments() {
-        LocalDateTime deadline = LocalDateTime.now().minusMinutes(1);
+        LocalDateTime deadline = LocalDateTime.now().minusMinutes(5);
 
         List<Payment> expiredPayments = paymentRepository
                 .findByStatusAndCreatedAtBefore(PaymentStatus.PROCESSING, deadline);

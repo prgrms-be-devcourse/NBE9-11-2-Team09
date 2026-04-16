@@ -49,7 +49,7 @@ public class ReservationController {
     ) {
         // userDetails 객체 안에서 userId를 꺼내서 서비스 로직으로 던져줍니다.
         reservationService.cancelReservation(reservationId, userDetails.getUserId(), false);
-        RsData<Void> rsData = new RsData<>("예약 취소가 완료되었습니다.", "200-3");
+        RsData<Void> rsData = new RsData<>("예약 취소 및 환불이 완료되었습니다.", "200-3");
 
         return ResponseEntity.status(rsData.getStatusCode()).body(rsData);
     }
