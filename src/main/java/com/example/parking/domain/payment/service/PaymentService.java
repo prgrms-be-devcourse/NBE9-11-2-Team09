@@ -33,6 +33,7 @@ public class PaymentService {
     /**
      * CUS-05: 결제 시작
      * - PROCESSING 상태로 저장
+     * - 예약 PENDING → CONFIRMED
      * - 주차자리 OCCUPIED → PAYING으로 변경 (스케줄러 충돌 방지)
      */
     @Transactional
@@ -43,6 +44,11 @@ public class PaymentService {
         validateReservationStatus(reservation);
         validateDuplicatePayment(request.getReservationId());
         validateAmount(reservation, request.getAmount());
+
+        if (!reservation.getUser().getId().equals(userId)) {
+            log.warn("결제 실패 - 본인 예약 아님 userId: {}, reservationId: {}", userId, request.getReservationId());
+            throw new SecurityException("본인의 예약만 결제할 수 있습니다.");
+        }
 
         // 결제 시작 시 주차자리 PAYING으로 변경
         int updatedCount = parkingSpotRepository.startPayment(
@@ -65,7 +71,7 @@ public class PaymentService {
     /**
      * CUS-05: 결제 승인
      * - COMPLETE 상태로 변경
-     * - 예약 CONFIRMED로 변경
+     * - 예약은 CONFIRMED 유지
      * - 주차자리 PAYING → AVAILABLE로 변경
      */
     @Transactional
@@ -87,10 +93,9 @@ public class PaymentService {
             throw new IllegalStateException("결제 진행 중인 상태만 승인할 수 있습니다.");
         }
 
-        // 엔티티 상태 변경 먼저
+        // 결제 상태 변경
         payment.complete();
-        payment.getReservation().confirm();
-        entityManager.flush(); // DB에 반영
+        entityManager.flush();
 
         // 주차자리 PAYING → AVAILABLE로 변경
         int updatedCount = parkingSpotRepository.completePayment(
@@ -142,9 +147,9 @@ public class PaymentService {
 
         validateRefundStatus(payment);
 
-        // 엔티티 상태 변경 먼저
+        // 결제 상태 변경
         payment.refund();
-        entityManager.flush(); // DB에 반영
+        entityManager.flush();
 
         // 주차자리 AVAILABLE로 복원
         int updatedCount = parkingSpotRepository.completePayment(
@@ -181,12 +186,12 @@ public class PaymentService {
         switch (reservation.getStatus()) {
             case PENDING -> {}
             case CONFIRMED -> {
-                log.warn("결제 실패 - 이미 결제된 예약 reservationId: {}", reservation.getId());
-                throw new IllegalStateException("이미 결제된 예약입니다.");
+                log.warn("결제 실패 - 이미 결제 진행 중인 예약 reservationId: {}", reservation.getId());
+                throw new IllegalStateException("이미 결제 진행 중인 예약입니다.");
             }
             case COMPLETED -> {
-                log.warn("결제 실패 - 완료된 예약 reservationId: {}", reservation.getId());
-                throw new IllegalStateException("완료된 예약입니다.");
+                log.warn("결제 실패 - 이미 완료된 예약 reservationId: {}", reservation.getId());
+                throw new IllegalStateException("이미 완료된 예약입니다.");
             }
             case CANCELED -> {
                 log.warn("결제 실패 - 취소된 예약 reservationId: {}", reservation.getId());
