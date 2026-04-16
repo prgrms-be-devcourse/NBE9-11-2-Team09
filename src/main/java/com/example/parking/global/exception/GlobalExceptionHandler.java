@@ -19,4 +19,5 @@ public class GlobalExceptionHandler {
         RsData<Void> rsData = new RsData<>(e.getMessage(), "409-1");
         return ResponseEntity.status(rsData.getStatusCode()).body(rsData);
     }
+
 }
