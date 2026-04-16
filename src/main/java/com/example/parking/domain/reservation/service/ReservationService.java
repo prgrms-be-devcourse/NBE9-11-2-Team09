@@ -74,6 +74,9 @@
 
             reservation.cancel();
 
+            // 점유된 자리 해제
+            parkingSpotService.release(reservation.getParkingSpot());
+
             // TODO: 원석님(결제) 환불 로직 연동
             // TODO: 현태님(자리) 상태 AVAILABLE 변경 로직 연동
         }
@@ -81,6 +84,8 @@
         // [CUS-03] 예약 생성
         @Transactional
         public ReservationResDto createReservation(Long userId, ReservationReqDto reqDto) {
+
+            validateReservationOpenTime();
             // 1. DTO에서 안전하게 파싱된 시간을 가져옵니다.
             LocalDateTime start = reqDto.getParsedStartTime();
             LocalDateTime end = reqDto.getParsedEndTime();
@@ -173,4 +178,16 @@
                 }
             });
         }
+
+
+        private void validateReservationOpenTime() {
+            LocalDateTime now = LocalDateTime.now();
+
+            int hour = now.getHour();
+
+            if (hour < 22 || hour >= 24) {
+                throw new IllegalStateException("예약은 매일 22시부터 24시까지만 가능합니다.");
+            }
+        }
+
     }

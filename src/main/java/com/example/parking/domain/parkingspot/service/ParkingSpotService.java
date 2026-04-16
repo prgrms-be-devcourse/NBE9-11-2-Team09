@@ -58,7 +58,7 @@ public class ParkingSpotService {
     }
     parkingSpotRepository.saveAll(spots);
   }
-
+  //[CUS-11] 자리 점유
   @Transactional
   public ParkingSpot reserve(ParkingSpot spot) {
 
@@ -70,6 +70,18 @@ public class ParkingSpotService {
     );
 
     return spot;
+  }
+
+  //[CUS-11] 자리 점유 해제
+  @Transactional
+  public void release(ParkingSpot spot) {
+
+    spot.release();
+
+    sseEmitterManager.notify(
+        spot.getParkingLot().getId(),
+        new ParkingSpotDto(spot)
+    );
   }
 
   public SseEmitter subscribe(Long parkingLotId) {

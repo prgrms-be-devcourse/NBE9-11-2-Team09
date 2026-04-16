@@ -1,27 +1,30 @@
-package com.example.parking.global.initdata;
-
-import com.example.parking.domain.parkingLot.repository.ParkingLotRepository;
-import com.example.parking.domain.parkingspot.repository.ParkingSpotRepository;
-import com.example.parking.domain.reservation.repository.ReservationRepository;
-import com.example.parking.domain.user.repository.UserRepository;
-import lombok.RequiredArgsConstructor;
-import org.springframework.boot.CommandLineRunner;
-import org.springframework.stereotype.Component;
-import org.springframework.transaction.annotation.Transactional;
-
-@Component
-@RequiredArgsConstructor
-public class ParkingDataRunner implements CommandLineRunner {
-
-    private final UserRepository userRepository;
-    private final ParkingLotRepository parkingLotRepository;
-    private final ParkingSpotRepository parkingSpotRepository;
-    private final ReservationRepository reservationRepository;
-
-    @Override
-    @Transactional
-    public void run(String... args) {
-//        if (userRepository.count() > 0) return; // 이미 데이터가 있으면 실행 안 함
+//package com.example.parking.global.initdata;
+//
+//import com.example.parking.domain.parkingLot.entity.ParkingLot;
+//import com.example.parking.domain.parkingLot.repository.ParkingLotRepository;
+//import com.example.parking.domain.parkingspot.entity.ParkingSpot;
+//import com.example.parking.domain.parkingspot.entity.SpotType;
+//import com.example.parking.domain.parkingspot.repository.ParkingSpotRepository;
+//import com.example.parking.domain.reservation.entity.Reservation;
+//import com.example.parking.domain.reservation.entity.ReservationStatus;
+//import com.example.parking.domain.reservation.repository.ReservationRepository;
+//import com.example.parking.domain.user.entity.UserRole;
+//import com.example.parking.domain.user.entity.VehicleType;
+//import com.example.parking.domain.user.repository.UserRepository;
+//import lombok.RequiredArgsConstructor;
+//import org.springframework.boot.CommandLineRunner;
+//import org.springframework.security.crypto.password.PasswordEncoder;
+//import org.springframework.stereotype.Component;
+//import org.springframework.transaction.annotation.Transactional;
+//import com.example.parking.domain.user.entity.User;
+//
+//
+//import java.time.LocalDateTime;
+//import java.time.LocalTime;
+//
+//@Component
+//@RequiredArgsConstructor
+//public class ParkingDataRunner implements CommandLineRunner {
 //
 //        // 1. 유저 (ID: 1)
 //        User user = userRepository.save(User.builder()
@@ -60,5 +63,5 @@ public class ParkingDataRunner implements CommandLineRunner {
 //                .status(ReservationStatus.CONFIRMED) // 🔥 신버전: 초기 상태 설정 (NULL 에러 방지)
 //                .build());
 //    }
-    }
-}
+//    }
+//}
