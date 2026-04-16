@@ -6,7 +6,6 @@
     import com.example.parking.domain.parkingspot.entity.SpotStatus;
     import com.example.parking.domain.parkingspot.repository.ParkingSpotRepository;
     import com.example.parking.domain.parkingspot.service.ParkingSpotService;
-    import com.example.parking.domain.payment.entity.Payment;
     import com.example.parking.domain.payment.repository.PaymentRepository;
     import com.example.parking.domain.reservation.dto.ReservationReqDto;
     import com.example.parking.domain.reservation.dto.ReservationResDto;
@@ -83,10 +82,11 @@
                 }
             }
 
-            // 3. 환불 처리: 결제가 완료된(CONFIRMED) 건은 환불 상태로 변경
             if (reservation.getStatus() == ReservationStatus.CONFIRMED) {
-                paymentRepository.findByReservationId(reservationId).ifPresent(Payment::refund);
-                log.info("[환불] 예약 ID: {} - 환불 처리가 완료되었습니다.", reservationId);
+                paymentRepository.findByReservationId(reservationId).ifPresent(payment -> {
+                    payment.refund(); // Payment 엔티티의 상태를 REFUND로 변경
+                    log.info("[환불 처리] 예약 ID: {} - 취소 정책에 따른 환불이 완료되었습니다.", reservationId);
+                });
             }
 
             // 4. 상태 변경 및 자리 반환

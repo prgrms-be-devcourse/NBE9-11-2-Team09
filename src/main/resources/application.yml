@@ -26,5 +26,9 @@ spring:
         format_sql: true       # 쿼리를 예쁘게 줄바꿈해서 출력
         default_batch_fetch_size: 100 # N+1 문제 방어용 (실무 필수)
 
+  jwt:
+    # 주의: 실제 배포할 땐 아주 길고 복잡한 무작위 문자열을 써야 합니다! (최소 256비트 이상)
+    secret: my-super-secret-key-for-parking-project-do-not-share
+
   profiles:
     active: local

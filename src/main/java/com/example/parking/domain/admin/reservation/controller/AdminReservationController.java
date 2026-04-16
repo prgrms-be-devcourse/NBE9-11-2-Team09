@@ -2,6 +2,7 @@ package com.example.parking.domain.admin.reservation.controller;
 
 import com.example.parking.domain.admin.reservation.dto.AdminReservationResDto;
 import com.example.parking.domain.admin.reservation.service.AdminReservationService;
+import com.example.parking.global.response.RsData;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -29,6 +30,7 @@ public class AdminReservationController {
     @PatchMapping("/{reservationId}/cancel")
     public ResponseEntity<Void> cancelReservation(@PathVariable Long reservationId) {
         adminReservationService.cancelReservationByAdmin(reservationId);
+        RsData<Void> rsData = new RsData<>("관리자 권한으로 예약 취소 및 환불이 완료되었습니다.", "200-5");
         return ResponseEntity.noContent().build();
     }
 }
