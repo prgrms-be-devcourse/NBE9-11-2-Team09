@@ -45,9 +45,10 @@ public class PaymentService {
         validateDuplicatePayment(request.getReservationId());
         validateAmount(reservation, request.getAmount());
 
-        // 예약 PENDING → CONFIRMED
-        reservation.confirm();
-        entityManager.flush();
+        if (!reservation.getUser().getId().equals(userId)) {
+            log.warn("결제 실패 - 본인 예약 아님 userId: {}, reservationId: {}", userId, request.getReservationId());
+            throw new SecurityException("본인의 예약만 결제할 수 있습니다.");
+        }
 
         // 결제 시작 시 주차자리 PAYING으로 변경
         int updatedCount = parkingSpotRepository.startPayment(

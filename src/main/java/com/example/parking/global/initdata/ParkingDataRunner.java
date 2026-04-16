@@ -26,28 +26,17 @@
 //@RequiredArgsConstructor
 //public class ParkingDataRunner implements CommandLineRunner {
 //
-//    private final UserRepository userRepository;
-//    private final ParkingLotRepository parkingLotRepository;
-//    private final ParkingSpotRepository parkingSpotRepository;
-//    private final ReservationRepository reservationRepository;
-//    private final PasswordEncoder passwordEncoder;
-//
-//    @Override
-//    @Transactional
-//    public void run(String... args) {
-//        if (userRepository.count() > 0) return;
-//
-//        // 1. 유저
+//        // 1. 유저 (ID: 1)
 //        User user = userRepository.save(User.builder()
 //                .email("test@test.com")
-//                .password(passwordEncoder.encode("1234"))
+//                .password("1234")
 //                .name("배재현")
 //                .plateNumber("12가3456")
 //                .vehicleType(VehicleType.SMALL)
 //                .role(UserRole.USER)
 //                .build());
-//
-//        // 2. 주차장
+
+//        // 2. 주차장 (ID: 1)
 //        ParkingLot parkingLot = parkingLotRepository.save(ParkingLot.builder()
 //                .name("강남 공영 주차장")
 //                .address("서울 강남구")
@@ -55,26 +44,24 @@
 //                .price(3000)
 //                .operationStartTime(LocalTime.of(9, 0))
 //                .operationEndTime(LocalTime.of(22, 0))
-//                .externalId("test-external-id")
 //                .build());
-//
-//        // 3. 주차 자리
+
+//        // 3. 주차 자리 (ID: 1)
 //        ParkingSpot parkingSpot = parkingSpotRepository.save(ParkingSpot.builder()
 //                .parkingLot(parkingLot)
 //                .number("A-01")
 //                .type(SpotType.SMALL)
 //                .build());
-//        // 예약 생성 시 주차자리 OCCUPIED로 변경
-//        parkingSpot.reserve();
 //
-//        // 4. PENDING 예약
+//        // 4. 예약 (ID: 1) - status 필드 추가
 //        reservationRepository.save(Reservation.builder()
 //                .user(user)
 //                .parkingLot(parkingLot)
 //                .parkingSpot(parkingSpot)
-//                .startTime(LocalDateTime.now().minusHours(1))
-//                .endTime(LocalDateTime.now().plusHours(2))
-//                .status(ReservationStatus.PENDING)
+//                .startTime(LocalDateTime.now().plusHours(1))
+//                .endTime(LocalDateTime.now().plusHours(3))
+//                .status(ReservationStatus.CONFIRMED) // 🔥 신버전: 초기 상태 설정 (NULL 에러 방지)
 //                .build());
+//    }
 //    }
 //}
