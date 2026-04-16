@@ -1,9 +1,8 @@
 package com.example.parking.domain.reservation.entity;
 
-import com.example.parking.domain.parking.entity.ParkingLot;
-import com.example.parking.domain.parking.entity.ParkingSpot;
+import com.example.parking.domain.parkingLot.entity.ParkingLot;
+import com.example.parking.domain.parkingspot.entity.ParkingSpot;
 import com.example.parking.domain.user.entity.User;
-// 아직 ParkingLot, ParkingSpot 엔티티가 없다면 임포트 에러가 날 수 있으니 패키지 경로를 확인하세요.
 import jakarta.persistence.*;
 import lombok.*;
 import org.springframework.data.annotation.CreatedDate;
@@ -14,7 +13,9 @@ import java.time.LocalDateTime;
 @Entity
 @Table(name = "reservations")
 @Getter
-@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@Builder
+@AllArgsConstructor // 👈 빌더가 내부적으로 사용하는 '모든 필드 생성자' 생성
+@NoArgsConstructor(access = AccessLevel.PROTECTED) // 👈 JPA가 사용하는 '기본 생성자' 생성
 @EntityListeners(AuditingEntityListener.class)
 public class Reservation {
 
@@ -23,20 +24,17 @@ public class Reservation {
     @Column(name = "reservation_id")
     private Long id;
 
-    // FK: User 테이블 참조
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
-    // FK: ParkingLot 테이블 참조 (엔티티가 생성된 후 연결하세요)
-     @ManyToOne(fetch = FetchType.LAZY)
-     @JoinColumn(name = "parking_lot_id", nullable = false)
-     private ParkingLot parkingLot;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "parking_lot_id", nullable = false)
+    private ParkingLot parkingLot;
 
-    // FK: 주차 자리 테이블 참조 (엔티티가 생성된 후 연결하세요)
-     @ManyToOne(fetch = FetchType.LAZY)
-     @JoinColumn(name = "parking_spot_id", nullable = false)
-     private ParkingSpot parkingSpot;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "parking_spot_id", nullable = false)
+    private ParkingSpot parkingSpot;
 
     @Column(name = "parking_start_time", nullable = false)
     private LocalDateTime startTime;
@@ -55,17 +53,42 @@ public class Reservation {
     @Column(name = "canceled_at")
     private LocalDateTime canceledAt;
 
+    // Builder에 DB 필수값(nullable = false)인 주차장과 자리 파라미터 추가 완료
     @Builder
-    public Reservation(User user, LocalDateTime startTime, LocalDateTime endTime) {
+    public Reservation(User user, ParkingLot parkingLot, ParkingSpot parkingSpot, LocalDateTime startTime, LocalDateTime endTime) {
         this.user = user;
+        this.parkingLot = parkingLot;
+        this.parkingSpot = parkingSpot;
         this.startTime = startTime;
         this.endTime = endTime;
-        this.status = ReservationStatus.PENDING; // 기본값 PENDING
+        this.status = ReservationStatus.PENDING;
     }
 
-    // 예약 취소 시 상태 변경 메서드
+    private LocalDateTime paymentRequestedAt; // 결제 버튼 클릭 시점
+
+    //결제 호출하기
+    public void startPayment() {
+        this.paymentRequestedAt = LocalDateTime.now();
+    }
+
+    //예약 상태를 cancel로 변경
     public void cancel() {
         this.status = ReservationStatus.CANCELED;
         this.canceledAt = LocalDateTime.now();
     }
+
+    //예약 상태를 CONFIRMED로 변경
+    public void confirm() {
+        this.status = ReservationStatus.CONFIRMED;
+    }
+
+    //예약 상태를 COMPLETED로 변경
+    public void complete() {
+        this.status = ReservationStatus.COMPLETED;
+    }
+
+    public void pending() {
+        this.status = ReservationStatus.PENDING;
+    }
+
 }

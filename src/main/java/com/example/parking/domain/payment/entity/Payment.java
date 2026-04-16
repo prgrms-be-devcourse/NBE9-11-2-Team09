@@ -20,7 +20,6 @@ public class Payment {
     @Column(name = "payment_id")
     private Long id;
 
-    // FK 및 UK: 예약 ID (1:1 관계)
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "payment_reservation_id", nullable = false, unique = true)
     private Reservation reservation;
@@ -37,14 +36,21 @@ public class Payment {
     private LocalDateTime createdAt;
 
     @Builder
-    public Payment(Reservation reservation, Integer amount) {
+    public Payment(Reservation reservation, int amount) {
         this.reservation = reservation;
         this.amount = amount;
-        this.status = PaymentStatus.COMPLETE; // 결제 발생 시 기본값
+        this.status = PaymentStatus.PROCESSING;  // 기본값 PENDING
     }
 
-    // 환불 처리용 메서드
+    public void complete() {
+        this.status = PaymentStatus.COMPLETE;
+    }
+
     public void refund() {
         this.status = PaymentStatus.REFUND;
+    }
+
+    public void fail() {
+        this.status = PaymentStatus.FAILED;
     }
 }
