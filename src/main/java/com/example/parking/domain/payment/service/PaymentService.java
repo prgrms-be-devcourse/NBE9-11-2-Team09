@@ -9,6 +9,7 @@ import com.example.parking.domain.payment.entity.PaymentStatus;
 import com.example.parking.domain.payment.repository.PaymentRepository;
 import com.example.parking.domain.reservation.entity.Reservation;
 import com.example.parking.domain.reservation.repository.ReservationRepository;
+import com.example.parking.domain.reservation.service.ReservationService;
 import jakarta.persistence.EntityManager;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -29,6 +30,7 @@ public class PaymentService {
     private final ReservationRepository reservationRepository;
     private final ParkingSpotRepository parkingSpotRepository;
     private final EntityManager entityManager;
+    private final ReservationService reservationService;
 
     /**
      * CUS-05: 결제 시작
@@ -58,6 +60,9 @@ public class PaymentService {
             log.warn("결제 시작 실패 - 주차자리 상태 변경 실패 spotId: {}", reservation.getParkingSpot().getId());
             throw new IllegalStateException("결제를 시작할 수 없는 상태입니다.");
         }
+
+        // 예약 엔티티에 결제 시작 기록 (2차 타이머 시작 신호)
+        reservationService.startPaymentProcess(reservation.getId());
 
         Payment payment = Payment.builder()
                 .reservation(reservation)
@@ -95,17 +100,10 @@ public class PaymentService {
 
         // 결제 상태 변경
         payment.complete();
+        // 주차자리 PAYING → AVAILABLE로 변경
+        reservationService.completePayment(payment.getReservation().getId());
         entityManager.flush();
 
-        // 주차자리 PAYING → AVAILABLE로 변경
-        int updatedCount = parkingSpotRepository.completePayment(
-                payment.getReservation().getParkingSpot().getId());
-
-        if (updatedCount == 0) {
-            log.warn("결제 승인 실패 - 주차자리 상태 변경 실패 spotId: {}",
-                    payment.getReservation().getParkingSpot().getId());
-            throw new IllegalStateException("결제 승인을 할 수 없는 상태입니다.");
-        }
 
         log.info("결제 승인 완료 - paymentId: {}", paymentId);
         return PaymentRespDto.from(payment);

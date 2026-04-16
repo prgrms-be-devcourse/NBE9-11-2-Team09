@@ -76,9 +76,6 @@
 
 
             reservation.getParkingSpot().release();
-
-            // TODO: 원석님(결제) 환불 로직 연동
-            // TODO: 현태님(자리) 상태 AVAILABLE 변경 로직 연동
         }
 
         // [CUS-03] 예약 생성
@@ -154,7 +151,7 @@
 
             // 💡 2. [실시간 취소 예약] 5분 뒤에 아래 cancelIfUnpaid 메서드를 실행합니다.
             taskScheduler.schedule(() -> {
-                // 💡 자기 자신의 프록시를 가져와서 호출해야 @Transactional이 정상 작동합니다.
+                 // 💡 자기 자신의 프록시를 가져와서 호출해야 @Transactional이 정상 작동합니다.
                 ReservationService self = reservationServiceProvider.getObject();
                 self.cancelIfUnpaid(reservationId);
             }, Instant.now().plusSeconds(300));
@@ -163,16 +160,19 @@
             return ReservationResDto.from(savedReservation);
         }
 
-        @Transactional // 💡 반드시 별도의 트랜잭션으로 실행되어야 함
+        @Transactional // 반드시 별도의 트랜잭션으로 실행되어야 함
         public void cancelIfUnpaid(Long reservationId) {
             // 💡 findById 대신 새로 만든 Fetch Join 메서드 사용
             reservationRepository.findByIdWithParkingSpot(reservationId).ifPresent(res -> {
-                if (res.getStatus() == ReservationStatus.PENDING) {
+                if (res.getStatus() == ReservationStatus.PENDING && res.getPaymentRequestedAt() == null) {
                     res.cancel();
                     if (res.getParkingSpot().getStatus() == SpotStatus.OCCUPIED) {
                         res.getParkingSpot().release();
                     }
-                    log.info("[실시간 취소 완료] 예약 ID: {}", reservationId);
+                    log.info("[1차 선점 취소] 예약 ID: {} - 결제 미진입으로 인한 만료", reservationId);
+                } else {
+                    // 결제창에 진입한 경우(paymentRequestedAt != null), 2차 타이머(결제팀)에게 처리를 맡깁니다.
+                    log.info("[1차 타이머 종료] 결제 프로세스 확인됨. 예약 ID: {}", reservationId);
                 }
             });
         }
@@ -194,8 +194,14 @@
                     .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 예약입니다."));
 
             res.confirm(); // PENDING -> CONFIRMED
-            res.getParkingSpot().release(); // PAYING -> AVAILABLE (물리적 자리 개방)
-            log.info("[결제 완료] 예약 ID: {}, 자리 상태: AVAILABLE (시간 선점 완료)", reservationId);
+            // 실제 상태를 변경하기 전에 체크
+            if (res.getParkingSpot().getStatus() == SpotStatus.PAYING) {
+                res.getParkingSpot().release();
+                log.info("[성공] 주차자리 해제 완료: spotId {}", res.getParkingSpot().getId());
+            } else {
+                // 💡 이미 다른 곳에서 바꿨다면 여기서 로그를 남깁니다.
+                log.info("[스킵] 주차자리가 이미 AVAILABLE 상태입니다: spotId {}", res.getParkingSpot().getId());
+            }
         }
 
     }
