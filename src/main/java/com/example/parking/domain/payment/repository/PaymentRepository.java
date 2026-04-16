@@ -1,11 +1,14 @@
 package com.example.parking.domain.payment.repository;
 
 import com.example.parking.domain.payment.entity.Payment;
+import com.example.parking.domain.payment.entity.PaymentStatus;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 public interface PaymentRepository extends JpaRepository<Payment, Long> {
 
@@ -24,4 +27,8 @@ public interface PaymentRepository extends JpaRepository<Payment, Long> {
             "JOIN FETCH r.user u " +
             "WHERE r.user.id = :userId")
     List<Payment> findAllByUserIdWithReservationAndUser(@Param("userId") Long userId);
+
+    List<Payment> findByStatusAndCreatedAtBefore(PaymentStatus status, LocalDateTime dateTime);
+
+    Optional<Payment> findByReservationParkingSpotIdAndStatus(Long parkingSpotId, PaymentStatus status);
 }

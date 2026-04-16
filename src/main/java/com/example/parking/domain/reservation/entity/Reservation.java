@@ -87,4 +87,8 @@ public class Reservation {
         this.status = ReservationStatus.COMPLETED;
     }
 
+    public void pending() {
+        this.status = ReservationStatus.PENDING;
+    }
+
 }
