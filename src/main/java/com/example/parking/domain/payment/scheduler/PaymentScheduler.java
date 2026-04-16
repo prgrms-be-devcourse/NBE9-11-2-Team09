@@ -31,6 +31,7 @@ public class PaymentScheduler {
 
         for (Payment payment : expiredPayments) {
             payment.fail();
+            payment.getReservation().pending(); // 예약 CONFIRMED → PENDING으로 복원
             parkingSpotRepository.failPayment(
                     payment.getReservation().getParkingSpot().getId());
             log.info("결제 만료 처리 - paymentId: {}", payment.getId());
