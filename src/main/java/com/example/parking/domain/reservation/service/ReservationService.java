@@ -6,6 +6,8 @@
     import com.example.parking.domain.parkingspot.entity.SpotStatus;
     import com.example.parking.domain.parkingspot.repository.ParkingSpotRepository;
     import com.example.parking.domain.parkingspot.service.ParkingSpotService;
+    import com.example.parking.domain.payment.entity.Payment;
+    import com.example.parking.domain.payment.repository.PaymentRepository;
     import com.example.parking.domain.reservation.dto.ReservationReqDto;
     import com.example.parking.domain.reservation.dto.ReservationResDto;
     import com.example.parking.domain.reservation.entity.Reservation;
@@ -38,6 +40,7 @@
         private final ReservationRepository reservationRepository;
         private final TaskScheduler taskScheduler; // 💡 1. TaskScheduler 주입
         private final ObjectProvider<ReservationService> reservationServiceProvider;
+        private final PaymentRepository paymentRepository;
 
         // [CUS-04] 예약 관리 - 내 예약 목록 조회
         public List<ReservationResDto> getMyReservations(Long userId, ReservationStatus status) {
@@ -154,7 +157,7 @@
                  // 💡 자기 자신의 프록시를 가져와서 호출해야 @Transactional이 정상 작동합니다.
                 ReservationService self = reservationServiceProvider.getObject();
                 self.cancelIfUnpaid(reservationId);
-            }, Instant.now().plusSeconds(300));
+            }, Instant.now().plusSeconds(60));
             log.info("[예약 생성] 50초 타이머 작동 시작 - 예약 ID: {}", reservationId);
 
             return ReservationResDto.from(savedReservation);
@@ -203,5 +206,28 @@
                 log.info("[스킵] 주차자리가 이미 AVAILABLE 상태입니다: spotId {}", res.getParkingSpot().getId());
             }
         }
+        @Transactional
+        public void cancelWithRefund(Long reservationId, boolean isForced) {
+            Reservation res = reservationRepository.findByIdWithParkingSpot(reservationId)
+                    .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 예약입니다."));
 
+            LocalDateTime now = LocalDateTime.now();
+
+            // 💡 사용자가 직접 취소할 때만(isForced = false) 30분 제약 체크
+            if (!isForced) {
+                LocalDateTime cancelDeadLine = res.getStartTime().minusMinutes(30);
+                if (now.isAfter(cancelDeadLine)) {
+                    throw new IllegalStateException("입차 30분 전까지만 취소가 가능합니다.");
+                }
+            }
+
+            // 환불 처리 (결제 완료 상태라면)
+            if (res.getStatus() == ReservationStatus.CONFIRMED) {
+                paymentRepository.findByReservationId(reservationId).ifPresent(Payment::refund);
+            }
+
+            // 예약 취소 및 자리 반환
+            res.cancel();
+            res.getParkingSpot().release();
+        }
     }
