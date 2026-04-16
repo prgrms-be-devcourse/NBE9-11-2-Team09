@@ -50,8 +50,8 @@ public class ReservationScheduler {
         // 결제 완료(CONFIRMED)된 건 중 시작 시간이 된 건들
         List<Reservation> toIn = reservationRepository.findToAutoCheckIn(now);
         for (Reservation res : toIn) {
-            // 물리적 자리 점유: AVAILABLE -> OCCUPIED
-            res.getParkingSpot().updateStatus(SpotStatus.OCCUPIED);
+            // 물리적 자리 점유: AVAILABLE -> PARKED
+            res.getParkingSpot().updateStatus(SpotStatus.PARKED);
             // 예약 상태 변경: CONFIRMED -> COMPLETED
             res.complete();
             log.info("[자동 입차] 예약 ID: {} 시작 시간 도달 - 자리 ID: {} -> OCCUPIED", res.getId(), res.getParkingSpot().getId());
