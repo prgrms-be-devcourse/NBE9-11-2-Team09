@@ -1,0 +1,34 @@
+package com.example.parking.domain.admin.reservation.controller;
+
+import com.example.parking.domain.admin.reservation.dto.AdminReservationResDto;
+import com.example.parking.domain.admin.reservation.service.AdminReservationService;
+import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+@RestController
+@RequiredArgsConstructor
+@RequestMapping("/api/admin/reservations")
+public class AdminReservationController {
+
+    private final AdminReservationService adminReservationService;
+
+    // [ADM-01] 고객 예약 목록 페이징 조회 (userId 파라미터로 특정 고객 필터 가능)
+    @GetMapping
+    public ResponseEntity<Page<AdminReservationResDto>> getAdminReservations(
+            @RequestParam(required = false) Long userId,
+            Pageable pageable
+    ) {
+        Page<AdminReservationResDto> response = adminReservationService.getAdminReservations(userId, pageable);
+        return ResponseEntity.ok(response);
+    }
+
+    // [ADM-01] 관리자 권한 특정 예약 강제 취소
+    @PatchMapping("/{reservationId}/cancel")
+    public ResponseEntity<Void> cancelReservation(@PathVariable Long reservationId) {
+        adminReservationService.cancelReservationByAdmin(reservationId);
+        return ResponseEntity.noContent().build();
+    }
+}
