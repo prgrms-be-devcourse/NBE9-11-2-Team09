@@ -2,6 +2,7 @@ package com.example.parking.domain.admin.reservation.controller;
 
 import com.example.parking.domain.admin.reservation.dto.AdminReservationResDto;
 import com.example.parking.domain.admin.reservation.service.AdminReservationService;
+import com.example.parking.global.response.RsData;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -27,8 +28,11 @@ public class AdminReservationController {
 
     // [ADM-01] 관리자 권한 특정 예약 강제 취소
     @PatchMapping("/{reservationId}/cancel")
-    public ResponseEntity<Void> cancelReservation(@PathVariable Long reservationId) {
+    public ResponseEntity<RsData<Void>> cancelByAdmin(@PathVariable Long reservationId) {
         adminReservationService.cancelReservationByAdmin(reservationId);
-        return ResponseEntity.noContent().build();
+
+        // 💡 관리자 응답에도 환불 완료 문구 추가
+        RsData<Void> rsData = new RsData<>("관리자 권한으로 예약 취소 및 환불이 완료되었습니다.", "200-5");
+        return ResponseEntity.status(rsData.getStatusCode()).body(rsData);
     }
 }
