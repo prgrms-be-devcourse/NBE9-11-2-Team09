@@ -31,4 +31,6 @@ public interface PaymentRepository extends JpaRepository<Payment, Long> {
     List<Payment> findByStatusAndCreatedAtBefore(PaymentStatus status, LocalDateTime dateTime);
 
     Optional<Payment> findByReservationParkingSpotIdAndStatus(Long parkingSpotId, PaymentStatus status);
+
+    Optional<Payment> findByReservationId(Long reservationId);
 }
