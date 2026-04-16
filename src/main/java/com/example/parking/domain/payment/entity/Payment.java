@@ -36,13 +36,21 @@ public class Payment {
     private LocalDateTime createdAt;
 
     @Builder
-    public Payment(Reservation reservation, Integer amount) {
+    public Payment(Reservation reservation, int amount) {
         this.reservation = reservation;
         this.amount = amount;
+        this.status = PaymentStatus.PROCESSING;  // 기본값 PENDING
+    }
+
+    public void complete() {
         this.status = PaymentStatus.COMPLETE;
     }
 
     public void refund() {
         this.status = PaymentStatus.REFUND;
+    }
+
+    public void fail() {
+        this.status = PaymentStatus.FAILED;
     }
 }

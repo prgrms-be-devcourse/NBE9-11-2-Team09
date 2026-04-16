@@ -74,6 +74,9 @@
 
             reservation.cancel();
 
+            // 점유된 자리 해제
+            parkingSpotService.release(reservation.getParkingSpot());
+
             // TODO: 원석님(결제) 환불 로직 연동
             // TODO: 현태님(자리) 상태 AVAILABLE 변경 로직 연동
         }

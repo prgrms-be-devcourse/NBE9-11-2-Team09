@@ -24,10 +24,7 @@ public class ParkingSpotScheduler {
   @Transactional
   public void releaseExpiredSpots() {
     LocalDateTime deadline = LocalDateTime.now().minusMinutes(5);
-//    LocalDateTime paymentDeadline = LocalDateTime.now().minusMinutes(3); // 결제 시작 후 3분 경과
-
-//    List<ParkingSpot> expiredPayments = parkingSpotRepository
-//        .findByStatusAndPaymentStartedAtBefore(SpotStatus.PAYING,paymentDeadline);
+//    LocalDateTime deadline = LocalDateTime.now().minusSeconds(10);
 
     // [CUS-11] 만료가 될수있는 후보들을 조회. OCCUPIED 인 parkingSpot을 조회함
     List<ParkingSpot> expiredSpots = parkingSpotRepository
@@ -47,15 +44,5 @@ public class ParkingSpotScheduler {
         );
       }
     }
-
-//    for (ParkingSpot spot : expiredPayments) {
-//      // [CUS-05] 개별 건에 대해 CAS 업데이트 시도
-//      int updatedCount = parkingSpotRepository.releaseExpiredPaymentById(spot.getId(), paymentDeadline);
-//
-//      // [CUS-05] 성공했다면 SSE 알림 전송
-//      if (updatedCount > 0) {
-//        sseEmitterManager.notify(spot.getParkingLot().getId(), new ParkingSpotDto(spot));
-//      }
-//    }
   }
 }
