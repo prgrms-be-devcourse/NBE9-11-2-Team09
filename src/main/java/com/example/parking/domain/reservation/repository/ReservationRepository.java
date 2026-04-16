@@ -2,6 +2,8 @@ package com.example.parking.domain.reservation.repository;
 
 import com.example.parking.domain.reservation.entity.Reservation;
 import com.example.parking.domain.reservation.entity.ReservationStatus;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -41,7 +43,6 @@ public interface ReservationRepository extends JpaRepository<Reservation, Long> 
             @Param("endTime") LocalDateTime endTime
     );
 
-    List<Reservation> findByStatusAndCreatedAtBefore(ReservationStatus status, LocalDateTime time);
 
     // 시작 시간은 지났고, 아직 자리는 AVAILABLE인 결제 완료 건 찾기
     @Query("SELECT r FROM Reservation r JOIN FETCH r.parkingSpot s " +
@@ -55,4 +56,15 @@ public interface ReservationRepository extends JpaRepository<Reservation, Long> 
 
     @Query("SELECT r FROM Reservation r JOIN FETCH r.parkingSpot WHERE r.id = :id")
     Optional<Reservation> findByIdWithParkingSpot(@Param("id") Long id);
+
+    // [ADM-01] 관리자용 특정 유저 예약 페이징 조회 (N+1 방지)
+    @Query(value = "SELECT r FROM Reservation r JOIN FETCH r.user JOIN FETCH r.parkingLot JOIN FETCH r.parkingSpot WHERE r.user.id = :userId",
+            countQuery = "SELECT count(r) FROM Reservation r WHERE r.user.id = :userId")
+    Page<Reservation> findAllByUserIdWithDetailsPage(@Param("userId") Long userId, Pageable pageable);
+
+    // [ADM-01] 관리자용 전체 예약 페이징 조회 (N+1 방지)
+    @Query(value = "SELECT r FROM Reservation r JOIN FETCH r.user JOIN FETCH r.parkingLot JOIN FETCH r.parkingSpot",
+            countQuery = "SELECT count(r) FROM Reservation r")
+    Page<Reservation> findAllWithDetailsPage(Pageable pageable);
+
 }
