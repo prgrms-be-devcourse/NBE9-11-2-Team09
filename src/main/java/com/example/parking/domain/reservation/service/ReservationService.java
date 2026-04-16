@@ -6,6 +6,8 @@
     import com.example.parking.domain.parkingspot.entity.SpotStatus;
     import com.example.parking.domain.parkingspot.repository.ParkingSpotRepository;
     import com.example.parking.domain.parkingspot.service.ParkingSpotService;
+    import com.example.parking.domain.payment.entity.Payment;
+    import com.example.parking.domain.payment.repository.PaymentRepository;
     import com.example.parking.domain.reservation.dto.ReservationReqDto;
     import com.example.parking.domain.reservation.dto.ReservationResDto;
     import com.example.parking.domain.reservation.entity.Reservation;
@@ -38,6 +40,7 @@
         private final ReservationRepository reservationRepository;
         private final TaskScheduler taskScheduler; // 💡 1. TaskScheduler 주입
         private final ObjectProvider<ReservationService> reservationServiceProvider;
+        private final PaymentRepository paymentRepository;
 
         // [CUS-04] 예약 관리 - 내 예약 목록 조회
         public List<ReservationResDto> getMyReservations(Long userId, ReservationStatus status) {
@@ -56,29 +59,40 @@
             return ReservationResDto.from(reservation);
         }
 
-        // [CUS-04] 예약 관리 - 예약 취소
         @Transactional
-        public void cancelReservation(Long reservationId, Long userId) {
-            Reservation reservation = reservationRepository.findByIdAndUserIdWithDetails(reservationId, userId)
-                    .orElseThrow(() -> new IllegalArgumentException("존재하지 않거나 이미 취소된 예약입니다."));
+        public void cancelReservation(Long reservationId, Long userId, boolean isForced) {
+            // 💡 Fetch Join으로 자리 정보까지 한 번에 가져옵니다.
+            Reservation reservation = reservationRepository.findByIdWithParkingSpot(reservationId)
+                    .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 예약입니다."));
 
-            // 1. 이미 취소된 예약인지 확인 (소프트 델리트 중복 방지)
-            if (reservation.getStatus() == ReservationStatus.CANCELED ) {
+            if (reservation.getStatus() == ReservationStatus.CANCELED) {
                 throw new IllegalStateException("이미 취소 처리된 예약입니다.");
             }
 
-            // 2. 권한 검증
-            if (!reservation.getUser().getId().equals(userId)) {
-                throw new IllegalArgumentException("해당 예약을 취소할 권한이 없습니다.");
+            // ✨ [검증] 관리자가 아닐 때만(isForced=false) 본인 확인 및 30분 정책 체크
+            if (!isForced) {
+                // 1. 권한 검증: 본인 예약인지 확인
+                if (userId == null || !reservation.getUser().getId().equals(userId)) {
+                    throw new IllegalArgumentException("해당 예약을 취소할 권한이 없습니다.");
+                }
+
+                // 2. 시간 검증: 입차 30분 전까지만 취소 가능
+                LocalDateTime now = LocalDateTime.now();
+                if (now.isAfter(reservation.getStartTime().minusMinutes(30))) {
+                    throw new IllegalStateException("입차 30분 전까지만 취소가 가능합니다.");
+                }
             }
 
+            // 3. 환불 처리: 결제가 완료된(CONFIRMED) 건은 환불 상태로 변경
+            if (reservation.getStatus() == ReservationStatus.CONFIRMED) {
+                paymentRepository.findByReservationId(reservationId).ifPresent(Payment::refund);
+                log.info("[환불] 예약 ID: {} - 환불 처리가 완료되었습니다.", reservationId);
+            }
+
+            // 4. 상태 변경 및 자리 반환
             reservation.cancel();
-
-            // 점유된 자리 해제
-            parkingSpotService.release(reservation.getParkingSpot());
-
-            // TODO: 원석님(결제) 환불 로직 연동
-            // TODO: 현태님(자리) 상태 AVAILABLE 변경 로직 연동
+            reservation.getParkingSpot().release();
+            log.info("[취소 성공] 예약 ID: {}, 강제취소여부: {}", reservationId, isForced);
         }
 
         // [CUS-03] 예약 생성
@@ -154,29 +168,59 @@
             Reservation savedReservation = reservationRepository.save(newReservation);
             Long reservationId = savedReservation.getId(); // ID 추출
 
-            // 💡 2. [실시간 취소 예약] 50초 뒤에 아래 cancelIfUnpaid 메서드를 실행합니다.
+            // 💡 2. [실시간 취소 예약] 5분 뒤에 아래 cancelIfUnpaid 메서드를 실행합니다.
             taskScheduler.schedule(() -> {
-                // 💡 자기 자신의 프록시를 가져와서 호출해야 @Transactional이 정상 작동합니다.
+                 // 💡 자기 자신의 프록시를 가져와서 호출해야 @Transactional이 정상 작동합니다.
                 ReservationService self = reservationServiceProvider.getObject();
                 self.cancelIfUnpaid(reservationId);
-            }, Instant.now().plusSeconds(300));
+            }, Instant.now().plusSeconds(60));
             log.info("[예약 생성] 50초 타이머 작동 시작 - 예약 ID: {}", reservationId);
 
             return ReservationResDto.from(savedReservation);
         }
 
-        @Transactional // 💡 반드시 별도의 트랜잭션으로 실행되어야 함
+        @Transactional // 반드시 별도의 트랜잭션으로 실행되어야 함
         public void cancelIfUnpaid(Long reservationId) {
             // 💡 findById 대신 새로 만든 Fetch Join 메서드 사용
             reservationRepository.findByIdWithParkingSpot(reservationId).ifPresent(res -> {
-                if (res.getStatus() == ReservationStatus.PENDING) {
+                if (res.getStatus() == ReservationStatus.PENDING && res.getPaymentRequestedAt() == null) {
                     res.cancel();
                     if (res.getParkingSpot().getStatus() == SpotStatus.OCCUPIED) {
-                        res.getParkingSpot().updateStatus(SpotStatus.AVAILABLE);
+                        res.getParkingSpot().release();
                     }
-                    log.info("[실시간 취소 완료] 예약 ID: {}", reservationId);
+                    log.info("[1차 선점 취소] 예약 ID: {} - 결제 미진입으로 인한 만료", reservationId);
+                } else {
+                    // 결제창에 진입한 경우(paymentRequestedAt != null), 2차 타이머(결제팀)에게 처리를 맡깁니다.
+                    log.info("[1차 타이머 종료] 결제 프로세스 확인됨. 예약 ID: {}", reservationId);
                 }
             });
+        }
+        // [Step 2] 결제 프로세스 진입 (결제 팀이 호출)
+        @Transactional
+        public void startPaymentProcess(Long reservationId) {
+            Reservation res = reservationRepository.findByIdWithParkingSpot(reservationId)
+                    .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 예약입니다."));
+
+            res.startPayment(); // paymentRequestedAt 기록
+            res.getParkingSpot().updateStatus(SpotStatus.PAYING); // OCCUPIED -> PAYING
+            log.info("[결제 시작] 예약 ID: {}, 자리 상태: PAYING", reservationId);
+        }
+
+        // [Step 3] 결제 최종 성공 (결제 팀이 호출)
+        @Transactional
+        public void completePayment(Long reservationId) {
+            Reservation res = reservationRepository.findByIdWithParkingSpot(reservationId)
+                    .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 예약입니다."));
+
+            res.confirm(); // PENDING -> CONFIRMED
+            // 실제 상태를 변경하기 전에 체크
+            if (res.getParkingSpot().getStatus() == SpotStatus.PAYING) {
+                res.getParkingSpot().release();
+                log.info("[성공] 주차자리 해제 완료: spotId {}", res.getParkingSpot().getId());
+            } else {
+                // 💡 이미 다른 곳에서 바꿨다면 여기서 로그를 남깁니다.
+                log.info("[스킵] 주차자리가 이미 AVAILABLE 상태입니다: spotId {}", res.getParkingSpot().getId());
+            }
         }
 
 
@@ -185,7 +229,7 @@
 
             int hour = now.getHour();
 
-            if (hour < 22 || hour >= 24) {
+            if (hour < 14 || hour >= 24) {
                 throw new IllegalStateException("예약은 매일 22시부터 24시까지만 가능합니다.");
             }
         }
