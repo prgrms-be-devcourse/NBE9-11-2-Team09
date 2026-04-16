@@ -37,7 +37,7 @@ public class ReservationScheduler {
     }
 
     private void cleanupSelectionTimeout(LocalDateTime now) {
-        LocalDateTime limit = now.minusMinutes(1);
+        LocalDateTime limit = now.minusMinutes(5);
         List<Reservation> expired = reservationRepository.findSelectionTimeout(limit);
         for (Reservation res : expired) {
             res.cancel();
