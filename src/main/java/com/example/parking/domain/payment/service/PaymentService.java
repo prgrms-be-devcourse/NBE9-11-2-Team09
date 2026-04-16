@@ -70,7 +70,7 @@ public class PaymentService {
     /**
      * CUS-05: 결제 승인
      * - COMPLETE 상태로 변경
-     * - 예약 CONFIRMED → COMPLETED로 변경
+     * - 예약은 CONFIRMED 유지
      * - 주차자리 PAYING → AVAILABLE로 변경
      */
     @Transactional
@@ -92,9 +92,8 @@ public class PaymentService {
             throw new IllegalStateException("결제 진행 중인 상태만 승인할 수 있습니다.");
         }
 
-        // 엔티티 상태 변경 먼저
+        // 결제 상태 변경
         payment.complete();
-        payment.getReservation().complete();
         entityManager.flush();
 
         // 주차자리 PAYING → AVAILABLE로 변경
@@ -147,7 +146,7 @@ public class PaymentService {
 
         validateRefundStatus(payment);
 
-        // 엔티티 상태 변경 먼저
+        // 결제 상태 변경
         payment.refund();
         entityManager.flush();
 
