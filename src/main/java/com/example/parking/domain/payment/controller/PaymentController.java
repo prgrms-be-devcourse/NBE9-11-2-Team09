@@ -2,6 +2,7 @@ package com.example.parking.domain.payment.controller;
 
 import com.example.parking.domain.payment.dto.PaymentReqDto;
 import com.example.parking.domain.payment.dto.PaymentRespDto;
+import com.example.parking.domain.payment.dto.TossConfirmReqDto;
 import com.example.parking.domain.payment.service.PaymentService;
 import com.example.parking.global.security.CustomUserDetails;
 import jakarta.validation.Valid;
@@ -30,14 +31,15 @@ public class PaymentController {
     }
 
     /**
-     * CUS-05: 결제 승인
+     * CUS-05: 결제 승인 (토스페이먼츠)
      */
     @PostMapping("/{paymentId}/approve")
     public ResponseEntity<PaymentRespDto> approvePayment(
             @PathVariable Long paymentId,
+            @RequestBody TossConfirmReqDto tossRequest,
             @AuthenticationPrincipal CustomUserDetails userDetails) {
         return ResponseEntity.ok(
-                paymentService.approvePayment(paymentId, userDetails.getUserId())
+                paymentService.approvePayment(paymentId, userDetails.getUserId(), tossRequest)
         );
     }
 }

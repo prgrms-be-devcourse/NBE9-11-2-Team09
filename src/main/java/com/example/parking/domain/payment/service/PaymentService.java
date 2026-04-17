@@ -4,8 +4,11 @@ import com.example.parking.domain.parkingspot.repository.ParkingSpotRepository;
 import com.example.parking.domain.payment.dto.PaymentAdminRespDto;
 import com.example.parking.domain.payment.dto.PaymentReqDto;
 import com.example.parking.domain.payment.dto.PaymentRespDto;
+import com.example.parking.domain.payment.dto.TossConfirmReqDto;
+import com.example.parking.domain.payment.dto.TossConfirmResDto;
 import com.example.parking.domain.payment.entity.Payment;
 import com.example.parking.domain.payment.entity.PaymentStatus;
+import com.example.parking.domain.payment.infrastructure.TossPaymentClient;
 import com.example.parking.domain.payment.repository.PaymentRepository;
 import com.example.parking.domain.reservation.entity.Reservation;
 import com.example.parking.domain.reservation.repository.ReservationRepository;
@@ -29,6 +32,7 @@ public class PaymentService {
     private final ReservationRepository reservationRepository;
     private final ParkingSpotRepository parkingSpotRepository;
     private final EntityManager entityManager;
+    private final TossPaymentClient tossPaymentClient;
 
     /**
      * CUS-05: 결제 시작
@@ -69,12 +73,13 @@ public class PaymentService {
 
     /**
      * CUS-05: 결제 승인
+     * - 토스페이먼츠 결제 승인 API 호출
      * - COMPLETE 상태로 변경
      * - 예약은 CONFIRMED 유지
      * - 주차자리 PAYING → AVAILABLE로 변경
      */
     @Transactional
-    public PaymentRespDto approvePayment(Long paymentId, Long userId) {
+    public PaymentRespDto approvePayment(Long paymentId, Long userId, TossConfirmReqDto tossRequest) {
 
         Payment payment = paymentRepository.findById(paymentId)
                 .orElseThrow(() -> {
@@ -91,6 +96,10 @@ public class PaymentService {
             log.warn("결제 승인 실패 - 결제 진행 중 상태가 아님 paymentId: {}", paymentId);
             throw new IllegalStateException("결제 진행 중인 상태만 승인할 수 있습니다.");
         }
+
+        // 토스페이먼츠 결제 승인 API 호출
+        TossConfirmResDto tossResponse = tossPaymentClient.confirm(tossRequest);
+        log.info("토스 결제 승인 완료 - paymentKey: {}, status: {}", tossResponse.getPaymentKey(), tossResponse.getStatus());
 
         // 결제 상태 변경
         payment.complete();
