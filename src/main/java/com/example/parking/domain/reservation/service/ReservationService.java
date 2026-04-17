@@ -2,6 +2,7 @@
 
     import com.example.parking.domain.parkingLot.entity.ParkingLot;
     import com.example.parking.domain.parkingLot.repository.ParkingLotRepository;
+    import com.example.parking.domain.parkingspot.dto.ParkingSpotDto;
     import com.example.parking.domain.parkingspot.entity.ParkingSpot;
     import com.example.parking.domain.parkingspot.entity.SpotStatus;
     import com.example.parking.domain.parkingspot.repository.ParkingSpotRepository;
@@ -14,7 +15,7 @@
     import com.example.parking.domain.reservation.repository.ReservationRepository;
     import com.example.parking.domain.user.entity.User;
     import com.example.parking.domain.user.repository.UserRepository;
-    import jakarta.persistence.EntityManager;
+    import com.example.parking.global.sse.SseEmitterManager;
     import lombok.RequiredArgsConstructor;
     import lombok.extern.slf4j.Slf4j;
     import org.springframework.beans.factory.ObjectProvider;
@@ -41,7 +42,7 @@
         private final TaskScheduler taskScheduler; // 💡 1. TaskScheduler 주입
         private final ObjectProvider<ReservationService> reservationServiceProvider;
         private final PaymentRepository paymentRepository;
-        private final EntityManager entityManager;
+        private final SseEmitterManager sseEmitterManager;
 
         // [CUS-04] 예약 관리 - 내 예약 목록 조회
         public List<ReservationResDto> getMyReservations(Long userId, ReservationStatus status) {
@@ -169,6 +170,9 @@
             // 7. CAS 성공 저장용 재조회 (영속 컨텍스트 문제 해결. CAS는 영속 컨텍스트를 비워버리므로)
             ParkingSpot spot = parkingSpotRepository.findById(reqDto.parkingSpotId())
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 주차 자리입니다."));
+
+            // CAS 성공 후 SSE 알림 직접 발송
+            sseEmitterManager.notify(spot.getParkingLot().getId(), new ParkingSpotDto(spot));
 
 
             // 6. 예약 엔티티 생성 및 저장
