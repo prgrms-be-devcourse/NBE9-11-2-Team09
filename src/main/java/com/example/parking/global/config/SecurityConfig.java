@@ -30,8 +30,6 @@ public class SecurityConfig {
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
                 .csrf((csrf) -> csrf.disable())
-                // CorsConfig 설정을 보안 필터에 적용
-                .cors(cors -> cors.configurationSource(corsConfigurationSource))
                 .headers((headers) -> headers
                         .addHeaderWriter(new XFrameOptionsHeaderWriter(
                                 XFrameOptionsHeaderWriter.XFrameOptionsMode.SAMEORIGIN)))
@@ -52,7 +50,6 @@ public class SecurityConfig {
 
         return http.build();
     }
-
     // [CUS-06] 회원가입 - 회원 비밀번호 암호화를 위해 BCrypt 인코더를 빈으로 등록
     @Bean
     public PasswordEncoder passwordEncoder() {

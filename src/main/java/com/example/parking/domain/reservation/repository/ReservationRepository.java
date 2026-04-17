@@ -81,4 +81,10 @@ public interface ReservationRepository extends JpaRepository<Reservation, Long> 
     long countOverlapping(@Param("spotId") Long spotId,
                           @Param("start") LocalDateTime start,
                           @Param("end") LocalDateTime end);
+
+    boolean existsByUserIdAndParkingLotIdAndStatusIn(
+        Long userId,
+        Long parkingLotId,
+        List<ReservationStatus> statuses
+    );
 }

@@ -151,8 +151,15 @@
                 throw new IllegalStateException("해당 시간에 이미 예약된 자리입니다.");
             }
 
-            // 💡 수정된 부분 2: 검증을 모두 통과했으므로 자리를 5분간 홀딩(OCCUPIED) 상태로 변경합니다.
+            // ✨ [신규 추가] 1인 1주차장 1자리 제한 검증
+            List<ReservationStatus> activeStatuses = List.of(ReservationStatus.PENDING, ReservationStatus.CONFIRMED);
+            boolean hasActiveReservation = reservationRepository.existsByUserIdAndParkingLotIdAndStatusIn(
+                userId, reqDto.parkingLotId(), activeStatuses
+            );
 
+            if (hasActiveReservation) {
+                throw new IllegalStateException("이미 이 주차장에 진행 중인 예약(또는 선점)이 존재합니다. 1주차장 당 1자리만 이용 가능합니다.");
+            }
             // 6. 🔥 CAS로 원자적 점유 시도
             int updated = parkingSpotRepository.tryReserve(parkingSpot.getId(), LocalDateTime.now());
             if (updated == 0) {
