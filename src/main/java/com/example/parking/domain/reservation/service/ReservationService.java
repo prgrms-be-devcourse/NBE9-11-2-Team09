@@ -125,9 +125,9 @@
 
 
             // 💡 수정된 부분 1: 현재 자리가 누군가 결제 중(OCCUPIED)인지 먼저 확인합니다.
-//            if (parkingSpot.getStatus() == SpotStatus.OCCUPIED) {
-//                throw new IllegalStateException("현재 다른 사용자가 결제 진행 중인 자리입니다. 잠시 후 다시 시도해주세요.");
-//            }
+            if (parkingSpot.getStatus() == SpotStatus.OCCUPIED) {
+                throw new IllegalStateException("현재 다른 사용자가 결제 진행 중인 자리입니다. 잠시 후 다시 시도해주세요.");
+            }
 
             // 4. 선택한 주차장의 ID와 실제 주차 자리가 속한 주차장의 ID가 일치하는지 검증합니다.
             if (!parkingSpot.getParkingLot().getId().equals(reqDto.parkingLotId())) {

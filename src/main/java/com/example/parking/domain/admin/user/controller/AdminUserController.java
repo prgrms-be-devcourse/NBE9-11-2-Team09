@@ -2,27 +2,27 @@ package com.example.parking.domain.admin.user.controller;
 
 import com.example.parking.domain.admin.user.dto.AdminUserResDto;
 import com.example.parking.domain.admin.user.service.AdminUserService;
+import com.example.parking.global.response.RsData;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequiredArgsConstructor
-// [ADM-05] 관리자 화면에서 전체 고객 목록 페이징 조회 - 이름 또는 이메일 키워드로 검색 가능
+@RequestMapping("/api/admin/users")
 public class AdminUserController {
 
     private final AdminUserService adminUserService;
 
-    @GetMapping("/api/admin/users")
-    public ResponseEntity<Page<AdminUserResDto>> getAdminUsers(
+    // [ADM-05] 전체 고객 목록 조회 - 관리자 권한으로 시스템 내 전체 사용자 리스트(검색 포함) 조회
+    @GetMapping
+    public ResponseEntity<RsData<Page<AdminUserResDto>>> getAdminUsers(
             @RequestParam(required = false) String keyword,
             Pageable pageable
     ) {
-        Page<AdminUserResDto> response = adminUserService.getAdminUsers(keyword, pageable);
-        return ResponseEntity.ok(response);
+        Page<AdminUserResDto> data = adminUserService.getAdminUsers(keyword, pageable);
+        return ResponseEntity.ok(new RsData<>("고객 목록 조회가 완료되었습니다.", "200-1", data));
     }
 }
