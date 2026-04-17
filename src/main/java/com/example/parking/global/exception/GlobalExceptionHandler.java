@@ -51,4 +51,5 @@ public class GlobalExceptionHandler {
         RsData<Void> rsData = new RsData<>("서버 내부 오류가 발생했습니다.", "500-1");
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(rsData);
     }
+
 }
