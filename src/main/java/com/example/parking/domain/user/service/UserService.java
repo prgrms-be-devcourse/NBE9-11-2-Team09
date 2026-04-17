@@ -1,6 +1,6 @@
 package com.example.parking.domain.user.service;
 
-import com.example.parking.domain.admin.user.dto.AdminUserResDto;
+import java.util.regex.Pattern;
 import com.example.parking.domain.user.dto.*;
 import com.example.parking.domain.user.entity.RefreshToken;
 import com.example.parking.domain.user.entity.User;
@@ -9,8 +9,6 @@ import com.example.parking.domain.user.repository.RefreshTokenRepository;
 import com.example.parking.domain.user.repository.UserRepository;
 import com.example.parking.global.security.JwtUtil;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -27,6 +25,26 @@ public class UserService {
     private final RefreshTokenRepository refreshTokenRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtUtil jwtUtil;
+    private static final Pattern EMAIL_PATTERN = Pattern.compile("^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+$");
+
+
+    public EmailCheckResDto checkEmail(String email) {
+        if (email == null || email.isBlank()) {
+            throw new IllegalArgumentException("이메일은 필수입니다.");
+        }
+
+        if (!EMAIL_PATTERN.matcher(email).matches()) {
+            throw new IllegalArgumentException("올바른 이메일 형식이 아닙니다.");
+        }
+
+        boolean exists = userRepository.existsByEmail(email);
+
+        if (exists) {
+            return new EmailCheckResDto(false, "이미 사용 중인 이메일입니다.");
+        }
+
+        return new EmailCheckResDto(true, "사용 가능한 이메일입니다.");
+    }
 
     @Transactional
     public UserProfileResDto signup(SignupReqDto reqDto) {
@@ -136,21 +154,6 @@ public class UserService {
         user.updateVehicleInfo(reqDto.getPlateNumber(), reqDto.getVehicleType());
 
         return UserProfileResDto.from(user);
-    }
-
-    // [ADM-05] 관리자 권한으로 전체 고객 목록 조회 - 이름 또는 이메일 키워드로 검색 가능, 페이징 처리
-    public Page<AdminUserResDto> getAdminUsers(String keyword, Pageable pageable) {
-        if (keyword == null || keyword.isBlank()) {
-            return userRepository.findAll(pageable)
-                    .map(AdminUserResDto::from);
-        }
-
-        return userRepository.findByNameContainingIgnoreCaseOrEmailContainingIgnoreCase(
-                        keyword,
-                        keyword,
-                        pageable
-                )
-                .map(AdminUserResDto::from);
     }
 
     // [CUS 07] 회원탈퇴 - 인증된 사용자의 비밀번호를 다시 확인한 뒤 soft delete 처리
