@@ -14,6 +14,7 @@
     import com.example.parking.domain.reservation.repository.ReservationRepository;
     import com.example.parking.domain.user.entity.User;
     import com.example.parking.domain.user.repository.UserRepository;
+    import jakarta.persistence.EntityManager;
     import lombok.RequiredArgsConstructor;
     import lombok.extern.slf4j.Slf4j;
     import org.springframework.beans.factory.ObjectProvider;
@@ -40,6 +41,7 @@
         private final TaskScheduler taskScheduler; // 💡 1. TaskScheduler 주입
         private final ObjectProvider<ReservationService> reservationServiceProvider;
         private final PaymentRepository paymentRepository;
+        private final EntityManager entityManager;
 
         // [CUS-04] 예약 관리 - 내 예약 목록 조회
         public List<ReservationResDto> getMyReservations(Long userId, ReservationStatus status) {
@@ -91,15 +93,14 @@
 
             // 4. 상태 변경 및 자리 반환
             reservation.cancel();
-            reservation.getParkingSpot().release();
-            log.info("[취소 성공] 예약 ID: {}, 강제취소여부: {}", reservationId, isForced);
+
+            // TODO: 원석님(결제) 환불 로직 연동
+            // TODO: 현태님(자리) 상태 AVAILABLE 변경 로직 연동
         }
 
         // [CUS-03] 예약 생성
         @Transactional
         public ReservationResDto createReservation(Long userId, ReservationReqDto reqDto) {
-
-            validateReservationOpenTime();
             // 1. DTO에서 안전하게 파싱된 시간을 가져옵니다.
             LocalDateTime start = reqDto.getParsedStartTime();
             LocalDateTime end = reqDto.getParsedEndTime();
@@ -119,8 +120,8 @@
                     .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 주차장입니다."));
 
             // 4. 주차 자리 조회 (🔥비관적 락 획득)
-            ParkingSpot parkingSpot = parkingSpotRepository.findByIdWithLock(reqDto.parkingSpotId())
-                    .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 주차 자리입니다."));
+            ParkingSpot parkingSpot = parkingSpotRepository.findById(reqDto.parkingSpotId())
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 주차 자리입니다."));
 
 
             // 💡 수정된 부분 1: 현재 자리가 누군가 결제 중(OCCUPIED)인지 먼저 확인합니다.
@@ -151,15 +152,23 @@
             }
 
             // 💡 수정된 부분 2: 검증을 모두 통과했으므로 자리를 5분간 홀딩(OCCUPIED) 상태로 변경합니다.
-//            parkingSpot.updateStatus(SpotStatus.OCCUPIED);
-            parkingSpotService.reserve(parkingSpot);
+
+            // 6. 🔥 CAS로 원자적 점유 시도
+            int updated = parkingSpotRepository.tryReserve(parkingSpot.getId(), LocalDateTime.now());
+            if (updated == 0) {
+                throw new IllegalStateException("방금 다른 사용자가 선점했습니다. 다른 자리를 선택해주세요.");
+            }
+
+            // 7. CAS 성공 저장용 재조회 (영속 컨텍스트 문제 해결. CAS는 영속 컨텍스트를 비워버리므로)
+            ParkingSpot spot = parkingSpotRepository.findById(reqDto.parkingSpotId())
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 주차 자리입니다."));
 
 
             // 6. 예약 엔티티 생성 및 저장
             Reservation newReservation = Reservation.builder()
                     .user(user)
                     .parkingLot(parkingLot)
-                    .parkingSpot(parkingSpot)
+                    .parkingSpot(spot)
                     .startTime(start)
                     .endTime(end)
                     .status(ReservationStatus.PENDING)
