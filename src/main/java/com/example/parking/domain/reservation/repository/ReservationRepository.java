@@ -63,10 +63,10 @@ public interface ReservationRepository extends JpaRepository<Reservation, Long> 
     List<Reservation> findToAutoCheckIn(@Param("now") LocalDateTime now);
 
     // 2. [자동 출차 대상] 이미 입차(COMPLETED) 상태이고 종료 시간이 현재 시간보다 이전인 예약
-// 주차 자리가 여전히 OCCUPIED인 경우만 골라냅니다.
+// 주차 자리가 여전히 PARKED인 경우만 골라냅니다.
     @Query("SELECT r FROM Reservation r JOIN FETCH r.parkingSpot " +
             "WHERE r.status = 'COMPLETED' AND r.endTime <= :now " +
-            "AND r.parkingSpot.status = 'OCCUPIED'")
+            "AND r.parkingSpot.status = 'PARKED'")
     List<Reservation> findToAutoCheckOut(@Param("now") LocalDateTime now);
 
     // 3. [1차 선점 타임아웃] PENDING 상태이며 결제 요청 기록 없이 5분이 지난 예약 (기존 파일에 있는 내용 확인)
