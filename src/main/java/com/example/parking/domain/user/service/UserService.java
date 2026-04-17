@@ -1,5 +1,6 @@
 package com.example.parking.domain.user.service;
 
+import java.util.regex.Pattern;
 import com.example.parking.domain.user.dto.*;
 import com.example.parking.domain.user.entity.RefreshToken;
 import com.example.parking.domain.user.entity.User;
@@ -24,6 +25,26 @@ public class UserService {
     private final RefreshTokenRepository refreshTokenRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtUtil jwtUtil;
+    private static final Pattern EMAIL_PATTERN = Pattern.compile("^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+$");
+
+
+    public EmailCheckResDto checkEmail(String email) {
+        if (email == null || email.isBlank()) {
+            throw new IllegalArgumentException("이메일은 필수입니다.");
+        }
+
+        if (!EMAIL_PATTERN.matcher(email).matches()) {
+            throw new IllegalArgumentException("올바른 이메일 형식이 아닙니다.");
+        }
+
+        boolean exists = userRepository.existsByEmail(email);
+
+        if (exists) {
+            return new EmailCheckResDto(false, "이미 사용 중인 이메일입니다.");
+        }
+
+        return new EmailCheckResDto(true, "사용 가능한 이메일입니다.");
+    }
 
     @Transactional
     public UserProfileResDto signup(SignupReqDto reqDto) {
