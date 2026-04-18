@@ -7,6 +7,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.context.request.async.AsyncRequestNotUsableException;
 
 @Slf4j
 @RestControllerAdvice
@@ -50,6 +51,12 @@ public class GlobalExceptionHandler {
         log.error("Unhandled Exception: ", e);
         RsData<Void> rsData = new RsData<>("서버 내부 오류가 발생했습니다.", "500-1");
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(rsData);
+    }
+
+    @ExceptionHandler(AsyncRequestNotUsableException.class)
+    public void handleDisconnectedClient(AsyncRequestNotUsableException e) {
+        // SSE 클라이언트 정상 연결 해제 - 로그만 남기고 무시
+        log.debug("SSE 클라이언트 연결 끊김 (정상): {}", e.getMessage());
     }
 
 }

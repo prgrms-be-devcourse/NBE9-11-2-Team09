@@ -4,6 +4,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -36,15 +37,18 @@ public class SseEmitterManager {
   }
 
   public void notify(Long parkingLotId, Object data) {
-    List<SseEmitter> lotEmitters = emitters.getOrDefault(parkingLotId, List.of());
+    List<SseEmitter> list = emitters.getOrDefault(parkingLotId, new CopyOnWriteArrayList<>());
+    List<SseEmitter> dead = new ArrayList<>();
 
-    for (SseEmitter emitter : lotEmitters) {
+    for (SseEmitter emitter : list) {
       try {
-        emitter.send(SseEmitter.event().name("spot-update").data(data));
-      } catch (IOException e) {
-        remove(parkingLotId, emitter);
+        emitter.send(SseEmitter.event().data(data));
+      } catch (Exception e) {
+        dead.add(emitter);
+        emitter.completeWithError(e);
       }
     }
+    list.removeAll(dead);
   }
 
   private void remove(Long parkingLotId, SseEmitter emitter) {
