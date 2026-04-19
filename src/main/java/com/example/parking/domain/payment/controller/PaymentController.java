@@ -2,6 +2,7 @@ package com.example.parking.domain.payment.controller;
 
 import com.example.parking.domain.payment.dto.PaymentReqDto;
 import com.example.parking.domain.payment.dto.PaymentRespDto;
+import com.example.parking.domain.payment.dto.TossConfirmReqDto;
 import com.example.parking.domain.payment.service.PaymentService;
 import com.example.parking.global.response.RsData;
 import com.example.parking.global.security.CustomUserDetails;
@@ -31,8 +32,9 @@ public class PaymentController {
     @PostMapping("/{paymentId}/approve")
     public ResponseEntity<RsData<PaymentRespDto>> approvePayment(
             @PathVariable Long paymentId,
+            @RequestBody TossConfirmReqDto tossRequest,
             @AuthenticationPrincipal CustomUserDetails userDetails) {
-        PaymentRespDto data = paymentService.approvePayment(paymentId, userDetails.getUserId());
+        PaymentRespDto data = paymentService.approvePayment(paymentId, userDetails.getUserId(), tossRequest);
         return ResponseEntity.ok(new RsData<>("결제 승인이 완료되었습니다.", "200-2", data));
     }
 }
