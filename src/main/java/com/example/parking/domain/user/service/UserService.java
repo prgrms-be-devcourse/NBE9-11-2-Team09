@@ -1,6 +1,9 @@
 package com.example.parking.domain.user.service;
 
+<<<<<<< HEAD
 import java.util.regex.Pattern;
+=======
+>>>>>>> 760d6b681918df1da6f9dcc8315a5f0648f59235
 import com.example.parking.domain.user.dto.*;
 import com.example.parking.domain.user.entity.RefreshToken;
 import com.example.parking.domain.user.entity.User;
@@ -15,6 +18,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.time.ZoneId;
+import java.util.regex.Pattern;
 
 @Service
 @RequiredArgsConstructor
@@ -69,9 +73,10 @@ public class UserService {
         return UserProfileResDto.from(savedUser);
     }
     // [CUS-08] 로그인 - 로그인 요청을 받아 사용자 인증 후 JWT access token 발급
+    @Transactional
     public LoginResDto login(LoginReqDto reqDto) {
-        User user = userRepository.findByEmail(reqDto.getUserEmail())
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 이메일입니다."));
+    User user = userRepository.findByEmail(reqDto.getUserEmail())
+            .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 이메일입니다."));
 
         // [CUS-08] 로그인 - 저장된 암호화 비밀번호와 입력 비밀번호 비교
         if (!passwordEncoder.matches(reqDto.getPassword(), user.getPassword())) {
@@ -92,6 +97,7 @@ public class UserService {
         return new LoginResDto(accessToken, refreshToken, "Bearer");
     }
 
+    @Transactional
     public LoginResDto refresh(RefreshTokenReqDto reqDto) {
         String refreshTokenValue = reqDto.getRefreshToken();
 
@@ -177,6 +183,7 @@ public class UserService {
     }
 
     // 로그아웃 - 클라이언트가 access token을 삭제하는 방식으로 로그아웃 처리 (서버에서는 별도의 상태 관리 없이 JWT의 유효성 검증으로 처리)
+    @Transactional
     public void logout(Long userId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
@@ -190,7 +197,8 @@ public class UserService {
     }
 
     // 사용자당 refresh token 1개 정책으로 저장하거나 기존 값을 갱신하는 메서드
-    private void saveOrUpdateRefreshToken(Long userId, String refreshToken) {
+    @Transactional
+    public void saveOrUpdateRefreshToken(Long userId, String refreshToken) {
         LocalDateTime expiresAt = LocalDateTime.ofInstant(
                 jwtUtil.getExpiration(refreshToken).toInstant(),
                 ZoneId.systemDefault()

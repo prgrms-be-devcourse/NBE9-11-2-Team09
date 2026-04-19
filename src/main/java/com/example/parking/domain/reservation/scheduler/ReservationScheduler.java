@@ -1,5 +1,7 @@
 package com.example.parking.domain.reservation.scheduler;
 
+import com.example.parking.domain.parkingspot.dto.ParkingSpotDto;
+import com.example.parking.global.sse.SseEmitterManager;
 import com.example.parking.domain.parkingspot.entity.SpotStatus;
 import com.example.parking.domain.reservation.entity.Reservation;
 import com.example.parking.domain.reservation.repository.ReservationRepository;
@@ -18,6 +20,7 @@ import java.util.List;
 public class ReservationScheduler {
 
     private final ReservationRepository reservationRepository;
+    private final SseEmitterManager sseEmitterManager;
 
     // 매 1분마다 실행 (매 분 0초)
     @Scheduled(cron = "0 * * * * *")
@@ -42,6 +45,10 @@ public class ReservationScheduler {
         for (Reservation res : expired) {
             res.cancel();
             res.getParkingSpot().updateStatus(SpotStatus.AVAILABLE);
+            sseEmitterManager.notify(
+                    res.getParkingSpot().getParkingLot().getId(),
+                    new ParkingSpotDto(res.getParkingSpot())
+            );
             log.info("[선점 만료] 예약 ID: {} 취소 및 자리 반환", res.getId());
         }
     }
@@ -54,6 +61,10 @@ public class ReservationScheduler {
             res.getParkingSpot().updateStatus(SpotStatus.PARKED);
             // 예약 상태 변경: CONFIRMED -> COMPLETED
             res.complete();
+            sseEmitterManager.notify(
+                    res.getParkingSpot().getParkingLot().getId(),
+                    new ParkingSpotDto(res.getParkingSpot())
+            );
             log.info("[자동 입차] 예약 ID: {} 시작 시간 도달 - 자리 ID: {} -> OCCUPIED", res.getId(), res.getParkingSpot().getId());
         }
     }
@@ -65,6 +76,10 @@ public class ReservationScheduler {
             // 물리적 자리 반환: PARKED -> AVAILABLE
             res.getParkingSpot().updateStatus(SpotStatus.AVAILABLE);
             // 예약 상태는 이미 COMPLETED이므로 추가 변경 불필요 (필요 시 로깅만)
+            sseEmitterManager.notify(
+                    res.getParkingSpot().getParkingLot().getId(),
+                    new ParkingSpotDto(res.getParkingSpot())
+            );
             log.info("[자동 출차] 예약 ID: {} 종료 시간 도달 - 자리 ID: {} -> AVAILABLE", res.getId(), res.getParkingSpot().getId());
         }
     }
