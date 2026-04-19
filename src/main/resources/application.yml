@@ -1,34 +1,26 @@
 spring:
-  # 1. H2 데이터베이스 세팅
   datasource:
-    # 💡 꿀팁: MODE=MySQL을 붙이면 H2가 MySQL 흉내를 내서 나중에 쿼리 에러가 안 납니다!
-    url: jdbc:h2:mem:parkingdb;MODE=MySQL
-    driver-class-name: org.h2.Driver
-    username: sa
-    password:
+    url: jdbc:mysql://localhost:3306/parkingdb?useSSL=false&allowPublicKeyRetrieval=true&characterEncoding=UTF-8&serverTimezone=Asia/Seoul
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
 
-  # 2. H2 웹 콘솔 (눈으로 DB 확인하는 용도)
   h2:
     console:
-      enabled: true
-      path: /h2-console
-      settings:
-        web-allow-others: true
+      enabled: false
 
-  # 3. JPA (비관적 락 & 자동 테이블 생성 세팅)
   jpa:
     hibernate:
-      # 서버 켜질 때 Entity 클래스를 보고 DB 테이블을 자동으로 만들어줌
       ddl-auto: update
     properties:
       hibernate:
-        show_sql: true         # 콘솔에 쿼리 출력
-        format_sql: true       # 쿼리를 예쁘게 줄바꿈해서 출력
-        default_batch_fetch_size: 100 # N+1 문제 방어용 (실무 필수)
+        show_sql: true
+        format_sql: true
+        default_batch_fetch_size: 100
+        dialect: org.hibernate.dialect.MySQLDialect
 
   jwt:
     # 주의: 실제 배포할 땐 아주 길고 복잡한 무작위 문자열을 써야 합니다! (최소 256비트 이상)
-    secret: my-super-secret-key-for-parking-project-do-not-share
-
+    secret: ${JWT_SECRET}
   profiles:
     active: local
