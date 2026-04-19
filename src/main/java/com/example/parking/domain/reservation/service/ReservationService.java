@@ -95,8 +95,14 @@
             // 4. 상태 변경 및 자리 반환
             reservation.cancel();
 
-            // TODO: 원석님(결제) 환불 로직 연동
-            // TODO: 현태님(자리) 상태 AVAILABLE 변경 로직 연동
+            ParkingSpot spot = reservation.getParkingSpot();
+            if (spot.getStatus() != SpotStatus.AVAILABLE) {
+                spot.release();
+                sseEmitterManager.notify(
+                        spot.getParkingLot().getId(),
+                        new ParkingSpotDto(spot)
+                );
+            }
         }
 
         // [CUS-03] 예약 생성
@@ -153,7 +159,7 @@
             }
 
             // ✨ [신규 추가] 1인 1주차장 1자리 제한 검증
-            List<ReservationStatus> activeStatuses = List.of(ReservationStatus.PENDING, ReservationStatus.CONFIRMED);
+            List<ReservationStatus> activeStatuses = List.of(ReservationStatus.PENDING, ReservationStatus.CONFIRMED, ReservationStatus.COMPLETED);
             boolean hasActiveReservation = reservationRepository.existsByUserIdAndParkingLotIdAndStatusIn(
                 userId, reqDto.parkingLotId(), activeStatuses
             );
