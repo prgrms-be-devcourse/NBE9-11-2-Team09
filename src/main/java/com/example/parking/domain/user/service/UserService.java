@@ -1,9 +1,6 @@
 package com.example.parking.domain.user.service;
 
-<<<<<<< HEAD
 import java.util.regex.Pattern;
-=======
->>>>>>> 760d6b681918df1da6f9dcc8315a5f0648f59235
 import com.example.parking.domain.user.dto.*;
 import com.example.parking.domain.user.entity.RefreshToken;
 import com.example.parking.domain.user.entity.User;
