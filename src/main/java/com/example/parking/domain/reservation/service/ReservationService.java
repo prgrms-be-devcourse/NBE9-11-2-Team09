@@ -153,7 +153,7 @@
             }
 
             // ✨ [신규 추가] 1인 1주차장 1자리 제한 검증
-            List<ReservationStatus> activeStatuses = List.of(ReservationStatus.PENDING, ReservationStatus.CONFIRMED);
+            List<ReservationStatus> activeStatuses = List.of(ReservationStatus.PENDING, ReservationStatus.CONFIRMED, ReservationStatus.COMPLETED);
             boolean hasActiveReservation = reservationRepository.existsByUserIdAndParkingLotIdAndStatusIn(
                 userId, reqDto.parkingLotId(), activeStatuses
             );
