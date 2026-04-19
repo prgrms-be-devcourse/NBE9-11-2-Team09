@@ -41,3 +41,5 @@ src/main/resources/application-local.yml
 
 # 성능 테스트 폴더 제외
 k6-tests/
+
+.env
