@@ -58,4 +58,6 @@ public class AdminReservationService {
 
         log.info("[관리자 강제 취소 성공] 예약 ID: {} 가 취소 및 환불 처리되었습니다.", reservationId);
     }
+
+
 }
