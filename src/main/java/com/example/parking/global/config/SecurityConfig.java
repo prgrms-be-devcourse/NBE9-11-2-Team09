@@ -1,6 +1,7 @@
 package com.example.parking.global.config;
 
 import com.example.parking.global.security.JwtFilter;
+import jakarta.servlet.DispatcherType;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -37,6 +38,12 @@ public class SecurityConfig {
                                 XFrameOptionsHeaderWriter.XFrameOptionsMode.SAMEORIGIN)))
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
+                        .dispatcherTypeMatchers(DispatcherType.ASYNC).permitAll()
+                        .requestMatchers("/swagger-ui/**", "/v3/api-docs/**", "/swagger-ui.html").permitAll()
+                        // refresh API는 access token 만료 후에도 호출할 수 있어야 하므로 permitAll로 둔다.
+                        .requestMatchers("/api/users/signup", "/api/users/login", "/api/users/refresh","/api/users/check-email","/h2-console/**","/error").permitAll()
+                        .requestMatchers("/api/parking-spots/*/subscribe").permitAll()
+                        .requestMatchers("/api/admin/**").hasRole("ADMIN")
                                 .requestMatchers("/swagger-ui/**", "/v3/api-docs/**", "/swagger-ui.html").permitAll()
                                 // refresh API는 access token 만료 후에도 호출할 수 있어야 하므로 permitAll로 둔다.
                                 .requestMatchers("/api/users/signup", "/api/users/login", "/api/users/refresh", "/h2-console/**","/error").permitAll()
@@ -56,7 +63,6 @@ public class SecurityConfig {
 
         return http.build();
     }
-
     // [CUS-06] 회원가입 - 회원 비밀번호 암호화를 위해 BCrypt 인코더를 빈으로 등록
     @Bean
     public PasswordEncoder passwordEncoder() {

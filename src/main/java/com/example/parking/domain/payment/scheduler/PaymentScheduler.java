@@ -1,5 +1,7 @@
 package com.example.parking.domain.payment.scheduler;
 
+import com.example.parking.domain.parkingspot.dto.ParkingSpotDto;
+import com.example.parking.global.sse.SseEmitterManager;
 import com.example.parking.domain.payment.entity.Payment;
 import com.example.parking.domain.payment.entity.PaymentStatus;
 import com.example.parking.domain.payment.repository.PaymentRepository;
@@ -22,6 +24,7 @@ public class PaymentScheduler {
     private final PaymentRepository paymentRepository;
     // 예약 취소를 위해 주입
     private final ReservationService reservationService;
+    private final SseEmitterManager sseEmitterManager;
 
     @Scheduled(fixedDelay = 60000)
     @Transactional
@@ -38,6 +41,11 @@ public class PaymentScheduler {
             Reservation res = payment.getReservation();
             res.cancel();
             res.getParkingSpot().release(); // PAYING -> AVAILABLE
+
+            sseEmitterManager.notify(
+                    res.getParkingSpot().getParkingLot().getId(),
+                    new ParkingSpotDto(res.getParkingSpot())
+            );
 
             log.info("[2차 결제 타임아웃] 결제 ID: {}, 예약 ID: {} 취소 완료",
                     payment.getId(), res.getId());

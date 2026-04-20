@@ -16,6 +16,13 @@ public class UserController {
 
     private final UserService userService;
 
+    // [CUS-06] 이메일 중복 체크 - 회원가입 시 이메일 중복 여부를 확인하는 API
+    @GetMapping("/api/users/check-email")
+    public ResponseEntity<EmailCheckResDto> checkEmail(@RequestParam String email) {
+        EmailCheckResDto response = userService.checkEmail(email);
+        return ResponseEntity.ok(response);
+    }
+
     // [CUS-06] 회원가입 - 회원가입 요청을 받아 사용자 정보 저장
     @PostMapping("/api/users/signup")
     public ResponseEntity<RsData<UserProfileResDto>> signup(@Valid @RequestBody SignupReqDto reqDto) {

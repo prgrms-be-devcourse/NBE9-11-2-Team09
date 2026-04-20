@@ -4,8 +4,13 @@ import com.example.parking.domain.parkingspot.dto.ParkingSpotDto;
 import com.example.parking.domain.parkingspot.service.ParkingSpotService;
 import com.example.parking.global.response.RsData;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 import java.util.List;
 
@@ -28,4 +33,10 @@ public class ParkingSpotController {
     List<ParkingSpotDto> data = parkingSpotService.findAllSpots(parkingLotId);
     return ResponseEntity.ok(new RsData<>("전체 자리 조회가 완료되었습니다.", "200-2", data));
   }
+
+  @GetMapping(value = "/{parkingLotId}/subscribe", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
+  public SseEmitter subscribe(@PathVariable Long parkingLotId) {
+    return parkingSpotService.subscribe(parkingLotId);
+  }
+
 }
