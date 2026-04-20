@@ -8,7 +8,6 @@ import com.example.parking.domain.payment.dto.PaymentReqDto;
 import com.example.parking.domain.payment.dto.PaymentRespDto;
 import com.example.parking.domain.payment.dto.TossConfirmReqDto;
 import com.example.parking.domain.payment.dto.TossConfirmResDto;
-import com.example.parking.domain.payment.dto.*;
 import com.example.parking.domain.payment.entity.Payment;
 import com.example.parking.domain.payment.entity.PaymentStatus;
 import com.example.parking.domain.payment.infrastructure.TossPaymentClient;
@@ -58,7 +57,7 @@ public class PaymentService {
 
         // 결제 시작 시 주차자리 PAYING으로 변경
         int updatedCount = parkingSpotRepository.startPayment(
-            reservation.getParkingSpot().getId());
+                reservation.getParkingSpot().getId());
 
         if (updatedCount == 0) {
             log.warn("결제 시작 실패 - 주차자리 상태 변경 실패 spotId: {}", reservation.getParkingSpot().getId());
@@ -69,11 +68,12 @@ public class PaymentService {
         reservationService.startPaymentProcess(reservation.getId());
 
         Payment payment = Payment.builder()
-            .reservation(reservation)
-            .amount(request.getAmount())
-            .build();
+                .reservation(reservation)
+                .amount(request.getAmount())
+                .build();
 
         log.info("결제 시작 - reservationId: {}, userId: {}", request.getReservationId(), userId);
+
         // 최신 상태로 재조회 후 notify
         ParkingSpot spot = parkingSpotRepository.findById(
                 reservation.getParkingSpot().getId()
@@ -83,6 +83,7 @@ public class PaymentService {
                 spot.getParkingLot().getId(),
                 new ParkingSpotDto(spot)
         );
+
         return PaymentRespDto.from(paymentRepository.save(payment));
     }
 
@@ -94,13 +95,13 @@ public class PaymentService {
      * - 주차자리 PAYING → AVAILABLE로 변경
      */
     @Transactional
-    public PaymentRespDto approvePayment(Long paymentId, Long userId) {
+    public PaymentRespDto approvePayment(Long paymentId, Long userId, TossConfirmReqDto tossRequest) {
 
         Payment payment = paymentRepository.findById(paymentId)
-            .orElseThrow(() -> {
-                log.warn("결제 승인 실패 - 존재하지 않는 결제 paymentId: {}", paymentId);
-                return new IllegalArgumentException("존재하지 않는 결제입니다.");
-            });
+                .orElseThrow(() -> {
+                    log.warn("결제 승인 실패 - 존재하지 않는 결제 paymentId: {}", paymentId);
+                    return new IllegalArgumentException("존재하지 않는 결제입니다.");
+                });
 
         if (!payment.getReservation().getUser().getId().equals(userId)) {
             log.warn("결제 승인 실패 - 본인 결제 아님 userId: {}", userId);
@@ -130,8 +131,8 @@ public class PaymentService {
         ).orElseThrow();
 
         sseEmitterManager.notify(
-                payment.getReservation().getParkingSpot().getParkingLot().getId(),
-                new ParkingSpotDto(payment.getReservation().getParkingSpot())
+                spot.getParkingLot().getId(),
+                new ParkingSpotDto(spot)
         );
 
         return PaymentRespDto.from(payment);
