@@ -1,6 +1,7 @@
 package com.example.parking.domain.user.dto;
 
 import com.example.parking.domain.user.entity.User;
+import com.example.parking.domain.user.entity.UserRole;
 import com.example.parking.domain.user.entity.VehicleType;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -14,6 +15,7 @@ public class UserProfileResDto {
     private String userName;
     private String plateNumber;
     private VehicleType vehicleType;
+    private UserRole role; // 추가
 
     public static UserProfileResDto from(User user) {
         return new UserProfileResDto(
@@ -21,7 +23,8 @@ public class UserProfileResDto {
             user.getEmail(),
             user.getName(),
             user.getPlateNumber(),
-            user.getVehicleType()
+            user.getVehicleType(),
+            user.getRole()
         );
     }
 }
