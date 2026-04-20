@@ -24,14 +24,13 @@ public class SecurityConfig {
     // [CUS-08] JWT 인증 - JwtFilter를 빈으로 주입하여 SecurityFilterChain에서 사용할 수 있도록 설정
     private final JwtFilter jwtFilter;
 
-    //  CorsConfig의 빈을 주입받아 연결하기 위해 추가
+    // CorsConfig의 빈을 주입받아 연결하기 위해 추가
     private final CorsConfigurationSource corsConfigurationSource;
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
                 .csrf((csrf) -> csrf.disable())
-                // CorsConfig 설정을 보안 필터에 적용
                 .cors(cors -> cors.configurationSource(corsConfigurationSource))
                 .headers((headers) -> headers
                         .addHeaderWriter(new XFrameOptionsHeaderWriter(
@@ -40,29 +39,21 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .dispatcherTypeMatchers(DispatcherType.ASYNC).permitAll()
                         .requestMatchers("/swagger-ui/**", "/v3/api-docs/**", "/swagger-ui.html").permitAll()
-                        // refresh API는 access token 만료 후에도 호출할 수 있어야 하므로 permitAll로 둔다.
-                        .requestMatchers("/api/users/signup", "/api/users/login", "/api/users/refresh","/api/users/check-email","/h2-console/**","/error").permitAll()
+                        .requestMatchers("/api/users/signup", "/api/users/login", "/api/users/refresh", "/api/users/check-email", "/h2-console/**", "/error").permitAll()
                         .requestMatchers("/api/parking-spots/*/subscribe").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/parking-lots/**").permitAll()
                         .requestMatchers("/api/admin/**").hasRole("ADMIN")
-                                .requestMatchers("/swagger-ui/**", "/v3/api-docs/**", "/swagger-ui.html").permitAll()
-                                // refresh API는 access token 만료 후에도 호출할 수 있어야 하므로 permitAll로 둔다.
-                                .requestMatchers("/api/users/signup", "/api/users/login", "/api/users/refresh", "/h2-console/**","/error").permitAll()
-
-                                // ✅ 주차장 조회는 로그아웃 상태에서도 가능해야 하므로 permitAll 추가 (403 에러 해결)
-                                .requestMatchers(HttpMethod.GET, "/api/parking-lots/**").permitAll()
-
-                                .requestMatchers("/api/admin/**").hasRole("ADMIN")
-//                        .requestMatchers("/api/reservations/**").permitAll()
-                                // [CUS-05] 결제 - 고객만 결제 가능
-                                .requestMatchers("/api/payments/**").hasRole("USER")
-                                // [ADM-03, ADM-04, ADM-01] 관리자 결제 조회 및 환불 - 관리자만 접근 가능
-                                .requestMatchers("/api/admin/payments/**").hasRole("ADMIN")
-                                .anyRequest().authenticated()
+                        // [CUS-05] 결제 - 고객만 결제 가능
+                        .requestMatchers("/api/payments/**").hasRole("USER")
+                        // [ADM-03, ADM-04, ADM-01] 관리자 결제 조회 및 환불 - 관리자만 접근 가능
+                        .requestMatchers("/api/admin/payments/**").hasRole("ADMIN")
+                        .anyRequest().authenticated()
                 )
                 .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }
+
     // [CUS-06] 회원가입 - 회원 비밀번호 암호화를 위해 BCrypt 인코더를 빈으로 등록
     @Bean
     public PasswordEncoder passwordEncoder() {
