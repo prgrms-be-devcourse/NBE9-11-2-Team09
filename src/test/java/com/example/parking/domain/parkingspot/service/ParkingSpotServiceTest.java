@@ -18,6 +18,7 @@ import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.List;
+import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -39,7 +40,7 @@ public class ParkingSpotServiceTest {
   @BeforeEach
   void setUp() {
     ParkingLot parkingLot = ParkingLot.builder()
-        .externalId("test-lot-001")
+        .externalId("test-lot-" + UUID.randomUUID())
         .name("테스트 주차장")
         .address("서울시 테스트구")
         .totalSpot(10)
