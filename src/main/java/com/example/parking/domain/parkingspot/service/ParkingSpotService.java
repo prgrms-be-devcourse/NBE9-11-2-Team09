@@ -39,9 +39,6 @@ public class ParkingSpotService {
         .toList();
 
   }
-  public ParkingSpot findParkingSpotById(Long parkingSpotId){
-    return parkingSpotRepository.findById(parkingSpotId).get();
-  }
 
   @Transactional
   public void createSpots(ParkingLot parkingLot, int totalSpot) {
