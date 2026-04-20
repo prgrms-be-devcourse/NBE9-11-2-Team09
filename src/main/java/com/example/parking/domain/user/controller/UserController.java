@@ -1,6 +1,7 @@
 package com.example.parking.domain.user.controller;
 
 import com.example.parking.domain.user.dto.*;
+import com.example.parking.domain.user.service.AuthService;
 import com.example.parking.domain.user.service.UserService;
 import com.example.parking.global.response.RsData;
 import com.example.parking.global.security.CustomUserDetails;
@@ -20,6 +21,7 @@ import org.springframework.web.bind.annotation.*;
 public class UserController {
 
     private final UserService userService;
+    private final AuthService authService;
 
     // [CUS-06] 이메일 중복 체크 - 회원가입 시 이메일 중복 여부를 확인하는 API
     @Operation(summary = "이메일 중복 확인", description = "회원가입 시 이메일 중복 여부를 확인합니다.")
@@ -56,7 +58,7 @@ public class UserController {
     })
     @PostMapping("/api/users/login")
     public ResponseEntity<RsData<LoginResDto>> login(@Valid @RequestBody LoginReqDto reqDto) {
-        LoginResDto data = userService.login(reqDto);
+        LoginResDto data = authService.login(reqDto);
         RsData<LoginResDto> rsData = new RsData<>("로그인이 완료되었습니다.", "200-2", data);
         return ResponseEntity.ok(rsData);
     }
@@ -69,7 +71,7 @@ public class UserController {
     })
     @PostMapping("/api/users/refresh")
     public ResponseEntity<RsData<LoginResDto>> refresh(@Valid @RequestBody RefreshTokenReqDto reqDto) {
-        LoginResDto data = userService.refresh(reqDto);
+        LoginResDto data = authService.refresh(reqDto);
         RsData<LoginResDto> rsData = new RsData<>("토큰 재발급이 완료되었습니다.", "200-3", data);
         return ResponseEntity.ok(rsData);
     }
@@ -137,7 +139,7 @@ public class UserController {
     public ResponseEntity<RsData<Void>> logout(
             @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
-        userService.logout(userDetails.getUserId());
+        authService.logout(userDetails.getUserId());
         RsData<Void> rsData = new RsData<>("로그아웃이 완료되었습니다.", "200-7");
         return ResponseEntity.ok(rsData);
     }
