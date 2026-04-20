@@ -55,7 +55,6 @@ public class PaymentService {
         validateDuplicatePayment(request.getReservationId());
         validateAmount(reservation, request.getAmount());
 
-        // 결제 시작 시 주차자리 PAYING으로 변경
         int updatedCount = parkingSpotRepository.startPayment(
                 reservation.getParkingSpot().getId());
 
@@ -64,7 +63,6 @@ public class PaymentService {
             throw new IllegalStateException("결제를 시작할 수 없는 상태입니다.");
         }
 
-        // 예약 엔티티에 결제 시작 기록 (2차 타이머 시작 신호)
         reservationService.startPaymentProcess(reservation.getId());
 
         Payment payment = Payment.builder()
@@ -72,19 +70,17 @@ public class PaymentService {
                 .amount(request.getAmount())
                 .build();
 
-        log.info("결제 시작 - reservationId: {}, userId: {}", request.getReservationId(), userId);
+        paymentRepository.save(payment);
 
-        // 최신 상태로 재조회 후 notify
+        // 최신 상태로 재조회 후 SSE notify
         ParkingSpot spot = parkingSpotRepository.findById(
                 reservation.getParkingSpot().getId()
         ).orElseThrow();
 
-        sseEmitterManager.notify(
-                spot.getParkingLot().getId(),
-                new ParkingSpotDto(spot)
-        );
+        sseEmitterManager.notify(spot.getParkingLot().getId(), new ParkingSpotDto(spot));
 
-        return PaymentRespDto.from(paymentRepository.save(payment));
+        log.info("결제 시작 - reservationId: {}, userId: {}", request.getReservationId(), userId);
+        return PaymentRespDto.from(payment);
     }
 
     /**
@@ -119,22 +115,17 @@ public class PaymentService {
 
         // 결제 상태 변경
         payment.complete();
-        // 주차자리 PAYING → AVAILABLE로 변경
         reservationService.completePayment(payment.getReservation().getId());
         entityManager.flush();
 
-        log.info("결제 승인 완료 - paymentId: {}", paymentId);
-
-        // flush 이후 spot을 다시 조회해서 최신 상태로 notify
+        // flush 이후 최신 상태로 재조회 후 SSE notify
         ParkingSpot spot = parkingSpotRepository.findById(
                 payment.getReservation().getParkingSpot().getId()
         ).orElseThrow();
 
-        sseEmitterManager.notify(
-                spot.getParkingLot().getId(),
-                new ParkingSpotDto(spot)
-        );
+        sseEmitterManager.notify(spot.getParkingLot().getId(), new ParkingSpotDto(spot));
 
+        log.info("결제 승인 완료 - paymentId: {}", paymentId);
         return PaymentRespDto.from(payment);
     }
 
@@ -174,11 +165,9 @@ public class PaymentService {
 
         validateRefundStatus(payment);
 
-        // 결제 상태 변경
         payment.refund();
         entityManager.flush();
 
-        // 주차자리 AVAILABLE로 복원
         int updatedCount = parkingSpotRepository.completePayment(
                 payment.getReservation().getParkingSpot().getId());
 
@@ -188,18 +177,14 @@ public class PaymentService {
             throw new IllegalStateException("환불을 처리할 수 없는 상태입니다.");
         }
 
-        log.info("환불 완료 - paymentId: {}", paymentId);
-
         // @Modifying JPQL이라 재조회 필요
         ParkingSpot spot = parkingSpotRepository.findById(
                 payment.getReservation().getParkingSpot().getId()
         ).orElseThrow();
 
-        sseEmitterManager.notify(
-                spot.getParkingLot().getId(),
-                new ParkingSpotDto(spot)
-        );
+        sseEmitterManager.notify(spot.getParkingLot().getId(), new ParkingSpotDto(spot));
 
+        log.info("환불 완료 - paymentId: {}", paymentId);
         return PaymentRespDto.from(payment);
     }
 
