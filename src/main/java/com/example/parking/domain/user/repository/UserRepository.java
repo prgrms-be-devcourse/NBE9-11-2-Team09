@@ -1,6 +1,7 @@
 package com.example.parking.domain.user.repository;
 
 import com.example.parking.domain.user.entity.User;
+import com.example.parking.domain.user.entity.UserRole;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -22,9 +23,21 @@ public interface UserRepository extends JpaRepository<User, Long> {
     // [ADM-05] 관리자 화면에서 전체 고객 목록 페이징 조회
     Page<User> findAll(Pageable pageable);
 
+    // [ADM-05] 관리자 화면에서 역할별 고객 목록 페이징 조회
+    Page<User> findByRole(UserRole role, Pageable pageable);
+
     // [ADM-05] 관리자 화면에서 이름 또는 이메일 키워드로 고객을 검색
     Page<User> findByNameContainingIgnoreCaseOrEmailContainingIgnoreCase(
             String nameKeyword,
+            String emailKeyword,
+            Pageable pageable
+    );
+
+    // [ADM-05] 관리자 화면에서 역할과 이름 또는 이메일 키워드로 고객을 검색
+    Page<User> findByRoleAndNameContainingIgnoreCaseOrRoleAndEmailContainingIgnoreCase(
+            UserRole roleForName,
+            String nameKeyword,
+            UserRole roleForEmail,
             String emailKeyword,
             Pageable pageable
     );
