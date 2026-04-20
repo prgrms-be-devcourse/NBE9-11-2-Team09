@@ -1,6 +1,5 @@
 package com.example.parking.domain.user.service;
 
-import java.util.regex.Pattern;
 import com.example.parking.domain.user.dto.*;
 import com.example.parking.domain.user.entity.User;
 import com.example.parking.domain.user.entity.UserStatus;
