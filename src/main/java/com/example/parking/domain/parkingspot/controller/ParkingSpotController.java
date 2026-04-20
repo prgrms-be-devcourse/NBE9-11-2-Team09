@@ -58,4 +58,5 @@ public class ParkingSpotController {
     return parkingSpotService.subscribe(parkingLotId);
   }
 
+
 }
