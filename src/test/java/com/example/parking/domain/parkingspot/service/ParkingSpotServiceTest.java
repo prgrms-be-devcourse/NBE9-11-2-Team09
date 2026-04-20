@@ -7,15 +7,11 @@ import com.example.parking.domain.parkingspot.entity.ParkingSpot;
 import com.example.parking.domain.parkingspot.entity.SpotStatus;
 import com.example.parking.domain.parkingspot.entity.SpotType;
 import com.example.parking.domain.parkingspot.repository.ParkingSpotRepository;
-import com.example.parking.domain.parkingspot.scheduler.ParkingSpotScheduler;
-import com.example.parking.domain.payment.scheduler.PaymentScheduler;
-import com.example.parking.domain.reservation.scheduler.ReservationScheduler;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
@@ -29,12 +25,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 @SpringBootTest
 @Transactional
 public class ParkingSpotServiceTest {
-  @MockitoBean
-  ParkingSpotScheduler parkingSpotScheduler;   // ✅ 스케줄러 비활성화
-  @MockitoBean
-  PaymentScheduler paymentScheduler;
-  @MockitoBean
-  ReservationScheduler reservationScheduler;
+
   @Autowired
   ParkingSpotRepository parkingSpotRepository;
   @Autowired
