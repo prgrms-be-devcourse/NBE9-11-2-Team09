@@ -39,6 +39,9 @@ public class ParkingSpotService {
         .toList();
 
   }
+  public ParkingSpot findParkingSpotById(Long parkingSpotId){
+    return parkingSpotRepository.findById(parkingSpotId).get();
+  }
 
   @Transactional
   public void createSpots(ParkingLot parkingLot, int totalSpot) {
@@ -88,4 +91,16 @@ public class ParkingSpotService {
     return sseEmitterManager.subscribe(parkingLotId);
   }
 
+  @Transactional
+  public void updateSpotStatusByAdmin(Long spotId, SpotStatus status) {
+    ParkingSpot spot = parkingSpotRepository.findById(spotId)
+        .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 주차 자리입니다."));
+
+    spot.updateStatus(status);
+
+    sseEmitterManager.notify(
+        spot.getParkingLot().getId(),
+        new ParkingSpotDto(spot)
+    );
+  }
 }
