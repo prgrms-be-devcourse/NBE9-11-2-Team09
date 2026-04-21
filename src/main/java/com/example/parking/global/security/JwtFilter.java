@@ -1,5 +1,7 @@
 package com.example.parking.global.security;
 
+import io.jsonwebtoken.ExpiredJwtException;
+import io.jsonwebtoken.JwtException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -27,26 +29,46 @@ public class JwtFilter extends OncePerRequestFilter {
 
         String token = resolveToken(request);
 
-        // refresh token이 인증 필터를 통과하지 않도록 access token만 인증에 사용한다.
-        if (token != null && jwtUtil.isValid(token) && "access".equals(jwtUtil.getTokenType(token))) {
-            Long userId = jwtUtil.getUserId(token);
-            String userEmail = jwtUtil.getUserEmail(token);
-            String role = jwtUtil.getRole(token);
+        try {
+            if (token != null) {
+                jwtUtil.validateToken(token);
 
-            CustomUserDetails userDetails = new CustomUserDetails(userId, userEmail, role);
+                // refresh token은 인증에 사용하지 않고 access token만 인증에 사용
+                if ("access".equals(jwtUtil.getTokenType(token))) {
+                    Long userId = jwtUtil.getUserId(token);
+                    String userEmail = jwtUtil.getUserEmail(token);
+                    String role = jwtUtil.getRole(token);
 
-                UsernamePasswordAuthenticationToken authentication =
-                        new UsernamePasswordAuthenticationToken(
-                                userDetails,
-                                null,
-                                userDetails.getAuthorities()
-                        );
+                    CustomUserDetails userDetails = new CustomUserDetails(userId, userEmail, role);
 
-                SecurityContextHolder.getContext().setAuthentication(authentication);
+                    UsernamePasswordAuthenticationToken authentication =
+                            new UsernamePasswordAuthenticationToken(
+                                    userDetails,
+                                    null,
+                                    userDetails.getAuthorities()
+                            );
 
+                    SecurityContextHolder.getContext().setAuthentication(authentication);
+                }
+            }
+
+            filterChain.doFilter(request, response);
+
+        } catch (ExpiredJwtException e) {
+            writeErrorResponse(
+                    response,
+                    HttpServletResponse.SC_UNAUTHORIZED,
+                    "401-1",
+                    "Access token이 만료되었습니다."
+            );
+        } catch (JwtException | IllegalArgumentException e) {
+            writeErrorResponse(
+                    response,
+                    HttpServletResponse.SC_UNAUTHORIZED,
+                    "401-2",
+                    "유효하지 않은 토큰입니다."
+            );
         }
-
-        filterChain.doFilter(request, response);
     }
 
     private String resolveToken(HttpServletRequest request) {
@@ -63,5 +85,25 @@ public class JwtFilter extends OncePerRequestFilter {
         }
 
         return null;
+    }
+
+    // 토큰이 유효하지 않거나 만료된 경우 401 응답을 JSON 형식으로 반환
+    private void writeErrorResponse(HttpServletResponse response,
+                                    int status,
+                                    String resultCode,
+                                    String message) throws IOException {
+        response.setStatus(status);
+        response.setCharacterEncoding("UTF-8");
+        response.setContentType("application/json;charset=UTF-8");
+
+        String body = String.format("""
+                {
+                  "msg": "%s",
+                  "resultCode": "%s",
+                  "data": null
+                }
+                """, message, resultCode);
+
+        response.getWriter().write(body);
     }
 }
