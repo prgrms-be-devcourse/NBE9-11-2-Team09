@@ -33,7 +33,7 @@ public class ParkingSpotController {
     List<ParkingSpotDto> data = parkingSpotService.findAllSpots(parkingLotId);
     return ResponseEntity.ok(new RsData<>("전체 자리 조회가 완료되었습니다.", "200-2", data));
   }
-
+  // 주차장내 모든 인원에게 전파
   @GetMapping(value = "/{parkingLotId}/subscribe", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
   public SseEmitter subscribe(@PathVariable Long parkingLotId) {
     return parkingSpotService.subscribe(parkingLotId);
