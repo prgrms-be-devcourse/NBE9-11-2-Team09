@@ -19,7 +19,7 @@ public class JwtUtil {
     private final SecretKey secretKey;
 
     // 로그인 - JWT 토큰 생성 - access token과 refresh token의 만료 시간 설정
-    private final long accessTokenExpirationMillis = 1000L * 10; // 30분
+    private final long accessTokenExpirationMillis = 1000L * 60 * 30; // 30분
     private final long refreshTokenExpirationMillis = 1000L * 60 * 60 * 24 * 7; // 7일
 
     public JwtUtil(@Value("${spring.jwt.secret}") String secret) {
