@@ -1,6 +1,5 @@
 package com.example.parking.domain.user.service;
 
-import java.util.regex.Pattern;
 import com.example.parking.domain.user.dto.*;
 import com.example.parking.domain.user.entity.User;
 import com.example.parking.domain.user.entity.UserStatus;
@@ -10,6 +9,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.regex.Pattern;
 
 @Service
 @RequiredArgsConstructor
