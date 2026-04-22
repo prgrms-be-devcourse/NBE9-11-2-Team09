@@ -9,6 +9,7 @@ import com.example.parking.domain.user.entity.UserStatus;
 import com.example.parking.domain.user.repository.RefreshTokenRepository;
 import com.example.parking.domain.user.repository.UserRepository;
 import com.example.parking.global.security.JwtUtil;
+import io.jsonwebtoken.JwtException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -57,7 +58,9 @@ public class AuthService {
     public LoginResDto refresh(RefreshTokenReqDto reqDto) {
         String refreshTokenValue = reqDto.getRefreshToken();
 
-        if (!jwtUtil.isValid(refreshTokenValue)) {
+        try {
+            jwtUtil.validateToken(refreshTokenValue);
+        } catch (JwtException e) {
             throw new IllegalArgumentException("유효하지 않은 리프레시 토큰입니다.");
         }
 

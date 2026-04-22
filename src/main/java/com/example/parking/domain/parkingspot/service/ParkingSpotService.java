@@ -14,6 +14,8 @@ import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.IntStream;
+import java.util.stream.Stream;
 
 @Service
 @RequiredArgsConstructor
@@ -21,7 +23,7 @@ public class ParkingSpotService {
 
   private final ParkingSpotRepository parkingSpotRepository;
   private final SseEmitterManager sseEmitterManager;
-
+  //[CUS-11] 이용가능한 자리 목록 반환
   public List<ParkingSpotDto> findAvailableSpots(Long parkingLotId) {
     return parkingSpotRepository.findAll()
         .stream()
@@ -30,6 +32,7 @@ public class ParkingSpotService {
         .map(ParkingSpotDto::new)
         .toList();
   }
+  //[CUS-11] 모든 자리 반환
   public List<ParkingSpotDto> findAllSpots(Long parkingLotId){
 
     return parkingSpotRepository.findAll()
@@ -39,7 +42,7 @@ public class ParkingSpotService {
         .toList();
 
   }
-
+  // [CUS-11]주차자리에 맞는 자리 생성
   @Transactional
   public void createSpots(ParkingLot parkingLot, int totalSpot) {
     List<ParkingSpot> spots = new ArrayList<>();
@@ -47,47 +50,26 @@ public class ParkingSpotService {
     int largeCount    = (int) (totalSpot * 0.1);  // 10%
 
 
-    for (int i = 1; i <= smallCount; i++) {
-      spots.add(ParkingSpot.create(parkingLot, String.valueOf(i), SpotType.SMALL));
-    }
-    for (int i = smallCount + 1; i <= smallCount + largeCount; i++) {
-      spots.add(ParkingSpot.create(parkingLot, String.valueOf(i), SpotType.LARGE));
-    }
-    for (int i = smallCount + largeCount + 1; i <= totalSpot; i++) {
-      spots.add(ParkingSpot.create(parkingLot, String.valueOf(i), SpotType.ELECTRIC));
-    }
+    Stream<ParkingSpot> smallStream = IntStream.rangeClosed(1, smallCount).boxed()
+        .map(it -> ParkingSpot.create(parkingLot, String.valueOf(it), SpotType.SMALL));
+
+    Stream<ParkingSpot> largeStream = IntStream.rangeClosed(smallCount + 1, smallCount + largeCount).boxed()
+        .map(it -> ParkingSpot.create(parkingLot, String.valueOf(it), SpotType.LARGE));
+
+    Stream<ParkingSpot> electricStream = IntStream.rangeClosed(smallCount + largeCount + 1, totalSpot).boxed()
+        .map(it -> ParkingSpot.create(parkingLot, String.valueOf(it), SpotType.ELECTRIC));
+
+    smallStream.forEach(spots::add);
+    largeStream.forEach(spots::add);
+    electricStream.forEach(spots::add);
+
     parkingSpotRepository.saveAll(spots);
   }
-  //[CUS-11] 자리 점유
-  @Transactional
-  public ParkingSpot reserve(ParkingSpot spot) {
-
-    spot.reserve();
-
-    sseEmitterManager.notify(
-        spot.getParkingLot().getId(),
-        new ParkingSpotDto(spot)
-    );
-
-    return spot;
-  }
-
-  //[CUS-11] 자리 점유 해제
-  @Transactional
-  public void release(ParkingSpot spot) {
-
-    spot.release();
-
-    sseEmitterManager.notify(
-        spot.getParkingLot().getId(),
-        new ParkingSpotDto(spot)
-    );
-  }
-
+  //[CUS-11] 구독. 주차장내 모든 인원에게 전파
   public SseEmitter subscribe(Long parkingLotId) {
     return sseEmitterManager.subscribe(parkingLotId);
   }
-
+  //[ADM-05] 관리자의 주차자리 상태변경
   @Transactional
   public void updateSpotStatusByAdmin(Long spotId, SpotStatus status) {
     ParkingSpot spot = parkingSpotRepository.findById(spotId)

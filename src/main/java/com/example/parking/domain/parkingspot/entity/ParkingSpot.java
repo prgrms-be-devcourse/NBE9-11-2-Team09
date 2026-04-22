@@ -23,7 +23,7 @@ public class ParkingSpot {
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @   JoinColumn(name = "parking_lot_id", nullable = false)
+    @JoinColumn(name = "parking_lot_id", nullable = false)
     private ParkingLot parkingLot;
 
     @Enumerated(EnumType.STRING)
@@ -39,9 +39,6 @@ public class ParkingSpot {
 
     @Column(name = "reserved_at")
     private LocalDateTime reservedAt;
-
-//    @Column(name = "payment_started_at")
-//    private LocalDateTime paymentStartedAt;
 
     @Builder
     public ParkingSpot(ParkingLot parkingLot, String number, SpotType type) {

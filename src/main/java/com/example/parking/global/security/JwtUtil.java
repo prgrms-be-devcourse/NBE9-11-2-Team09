@@ -2,6 +2,7 @@ package com.example.parking.global.security;
 
 import com.example.parking.domain.user.entity.User;
 import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
 import org.springframework.beans.factory.annotation.Value;
@@ -16,6 +17,7 @@ import java.util.Date;
 public class JwtUtil {
 
     private final SecretKey secretKey;
+
     // 로그인 - JWT 토큰 생성 - access token과 refresh token의 만료 시간 설정
     private final long accessTokenExpirationMillis = 1000L * 60 * 30; // 30분
     private final long refreshTokenExpirationMillis = 1000L * 60 * 60 * 24 * 7; // 7일
@@ -34,13 +36,12 @@ public class JwtUtil {
     }
 
     // [CUS-08] 로그인 - JWT 토큰 검증 - 토큰의 유효성 검사 및 사용자 정보 추출
-    public boolean isValid(String token) {
-        try {
-            parseClaims(token);
-            return true;
-        } catch (Exception e) {
-            return false;
-        }
+    /**
+     * 토큰이 유효하면 아무 일도 하지 않고,
+     * 만료/서명오류/형식오류 등 문제가 있으면 예외를 던진다.
+     */
+    public void validateToken(String token) throws JwtException {
+        parseClaims(token);
     }
 
     // [CUS-08] 로그인 - JWT 토큰 검증 - 토큰에서 사용자 ID 추출
@@ -96,7 +97,7 @@ public class JwtUtil {
     }
 
     // [CUS-08] 로그인 - JWT 토큰 검증 - 토큰의 유효성 검사 및 사용자 정보 추출을 위한 공통 메서드
-    private Claims parseClaims(String token) {
+    private Claims parseClaims(String token) throws JwtException {
         return Jwts.parser()
                 .verifyWith(secretKey)
                 .build()

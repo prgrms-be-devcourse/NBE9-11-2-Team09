@@ -18,7 +18,7 @@ public interface ReservationRepository extends JpaRepository<Reservation, Long> 
     @Query("SELECT r FROM Reservation r JOIN FETCH r.parkingLot JOIN FETCH r.parkingSpot " +
             "WHERE r.user.id = :userId " +
             "AND (:status IS NULL OR r.status = :status)")
-    // 🔥 상태 조건 동적 처리
+    //상태 조건 동적 처리
     List<Reservation> findAllByUserIdWithDetails(
             @Param("userId") Long userId,
             @Param("status") ReservationStatus status);
@@ -26,7 +26,7 @@ public interface ReservationRepository extends JpaRepository<Reservation, Long> 
     // [CUS-04] 예약 관리 - 특정 예약 상세 조회 (N+1 문제 방지 Fetch Join)
     @Query("SELECT r FROM Reservation r JOIN FETCH r.parkingLot JOIN FETCH r.parkingSpot " +
             "WHERE r.id = :reservationId AND r.user.id = :userId")
-    // 🔥 status 조건 제거
+    //status 조건 제거
     Optional<Reservation> findByIdAndUserIdWithDetails(
             @Param("reservationId") Long reservationId,
             @Param("userId") Long userId);
@@ -35,7 +35,7 @@ public interface ReservationRepository extends JpaRepository<Reservation, Long> 
     // 원리: (기존 시작시간 < 내 종료시간) AND (기존 종료시간 > 내 시작시간) 이면 겹친 것임
     @Query("SELECT COUNT(r) FROM Reservation r " +
             "WHERE r.parkingSpot.id = :spotId " +
-            "AND r.status != 'CANCELED' " + // 🔥 취소된 예약은 겹침 검사에서 제외!
+            "AND r.status != 'CANCELED' " + //취소된 예약은 겹침 검사에서 제외
             "AND r.startTime < :endTime AND r.endTime > :startTime")
     long countOverlappingReservations(
             @Param("spotId") Long spotId,

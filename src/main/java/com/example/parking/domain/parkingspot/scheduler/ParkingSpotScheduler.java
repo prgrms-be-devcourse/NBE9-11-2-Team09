@@ -24,7 +24,6 @@ public class ParkingSpotScheduler {
   @Transactional
   public void releaseExpiredSpots() {
     LocalDateTime deadline = LocalDateTime.now().minusMinutes(5);
-//    LocalDateTime deadline = LocalDateTime.now().minusSeconds(10);
 
     // [CUS-11] 만료가 될수있는 후보들을 조회. OCCUPIED 인 parkingSpot을 조회함
     List<ParkingSpot> expiredSpots = parkingSpotRepository

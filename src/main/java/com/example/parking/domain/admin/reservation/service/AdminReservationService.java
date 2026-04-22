@@ -41,7 +41,7 @@ public class AdminReservationService {
 
         LocalDateTime now = LocalDateTime.now();
 
-        // 💡 관리자 제약 조건 검증
+        // 관리자 제약 조건 검증
         // 1. 결제가 완료된(CONFIRMED) 상태여야 함
         if (reservation.getStatus() != ReservationStatus.CONFIRMED) {
             throw new IllegalStateException("결제가 완료되지 않은 예약은 관리자가 취소할 수 없습니다.");
@@ -52,7 +52,7 @@ public class AdminReservationService {
             throw new IllegalStateException("이미 입차 시간이 지난 예약은 관리자가 취소할 수 없습니다.");
         }
 
-        // ✨ 중앙화된 취소/환불 로직 호출
+        //중앙화된 취소/환불 로직 호출
         // 관리자이므로 userId는 null을, isForced는 true를 전달합니다.
         reservationService.cancelReservation(reservationId, null, true);
 
