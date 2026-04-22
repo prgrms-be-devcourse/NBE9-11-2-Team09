@@ -40,5 +40,6 @@ out/
 src/main/resources/application-local.yml
 
 .env
-k6-tests
+
+# MacOS 관련 불필요한 파일
 .DS_Store
