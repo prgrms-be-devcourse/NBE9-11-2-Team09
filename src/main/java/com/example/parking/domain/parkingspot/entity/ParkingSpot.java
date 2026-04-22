@@ -9,10 +9,9 @@ import lombok.NoArgsConstructor;
 import java.time.LocalDateTime;
 
 @Entity
-//@Table(name = "parking_spot", indexes = {
-//    @Index(name = "idx_parking_lot_status", columnList = "parking_lot_id, parking_spot_status")
-//})
-@Table(name = "parking_spot")
+@Table(name = "parking_spot", indexes = {
+    @Index(name = "idx_parking_lot_status", columnList = "parking_lot_id, parking_spot_status")
+})
 @Getter
 @NoArgsConstructor
 public class ParkingSpot {

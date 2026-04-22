@@ -8,6 +8,7 @@ import com.example.parking.domain.parkingspot.entity.SpotType;
 import com.example.parking.domain.parkingspot.repository.ParkingSpotRepository;
 import com.example.parking.global.sse.SseEmitterManager;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
@@ -17,6 +18,7 @@ import java.util.List;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class ParkingSpotService {
@@ -25,12 +27,12 @@ public class ParkingSpotService {
   private final SseEmitterManager sseEmitterManager;
   //[CUS-11] 이용가능한 자리 목록 반환
   public List<ParkingSpotDto> findAvailableSpots(Long parkingLotId) {
-    return parkingSpotRepository.findAll()
+    return parkingSpotRepository
+        .findByParkingLotIdAndStatus(parkingLotId, SpotStatus.AVAILABLE)
         .stream()
-        .filter(spot -> spot.getParkingLot().getId().equals(parkingLotId))
-        .filter(spot -> spot.getStatus() == SpotStatus.AVAILABLE)
         .map(ParkingSpotDto::new)
         .toList();
+
   }
   //[CUS-11] 모든 자리 반환
   public List<ParkingSpotDto> findAllSpots(Long parkingLotId){
