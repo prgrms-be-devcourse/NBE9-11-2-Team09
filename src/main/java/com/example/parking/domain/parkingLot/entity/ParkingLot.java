@@ -25,7 +25,7 @@ public class ParkingLot {
     private Long id;
 
     // 외부 공공데이터의 주차장 식별값
-    @Column(nullable = false, unique = true)
+    @Column(name = "external_id", nullable = false, unique = true, length = 100)
     private String externalId;
 
     @Column(name = "parking_lot_name", nullable = false, length = 100)
@@ -34,7 +34,7 @@ public class ParkingLot {
     @Column(nullable = false, length = 255)
     private String address;
 
-    @Column(nullable = false)
+    @Column(name = "total_spot", nullable = false)
     private Integer totalSpot;
 
     @Column(nullable = false)
