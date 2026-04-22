@@ -43,7 +43,7 @@ public class ParkingSpotConcurrencyTest {
 
   @BeforeEach
   void setUp() {
-    // transactionTemplate을 사용하여 데이터를 DB에 실제로 커밋합니다.
+    // transactionTemplate을 사용하여 데이터를 DB에 실제로 커밋
     savedSpotId = transactionTemplate.execute(status -> {
       ParkingLot parkingLot = ParkingLot.builder()
           .externalId("test-lot-" + UUID.randomUUID())
@@ -75,7 +75,7 @@ public class ParkingSpotConcurrencyTest {
           // [디버깅용] 데이터 존재 여부 확인
           System.out.println("Thread accessing ID: " + savedSpotId);
 
-          // tryReserve는 @Modifying 쿼리이므로 별도의 트랜잭션이 필요할 수 있습니다.
+          // tryReserve는 @Modifying 쿼리이므로 별도의 트랜잭션이 필요할 수 있음
           int result = transactionTemplate.execute(status ->
               parkingSpotRepository.tryReserve(savedSpotId, LocalDateTime.now())
           );

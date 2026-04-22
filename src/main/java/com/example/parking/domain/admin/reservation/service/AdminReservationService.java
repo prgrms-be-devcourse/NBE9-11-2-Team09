@@ -53,7 +53,7 @@ public class AdminReservationService {
         }
 
         //중앙화된 취소/환불 로직 호출
-        // 관리자이므로 userId는 null을, isForced는 true를 전달합니다.
+        // 관리자이므로 userId는 null을, isForced는 true를 전달
         reservationService.cancelReservation(reservationId, null, true);
 
         log.info("[관리자 강제 취소 성공] 예약 ID: {} 가 취소 및 환불 처리되었습니다.", reservationId);
