@@ -26,6 +26,9 @@ public interface ParkingSpotRepository extends JpaRepository<ParkingSpot, Long> 
     // [CUS-11] OCCUPIED 인 parkingSpot을 조회
     List<ParkingSpot> findByStatusAndReservedAtBefore(SpotStatus status, LocalDateTime time);
 
+    // [CUS-11] 주차장 아이디랑 상태로 자리 조회
+    List<ParkingSpot> findByParkingLotIdAndStatus(Long parkingLotId, SpotStatus status);
+
     // [CUS-11] 스케줄러의 만료 처리 (CAS 방식)
     @Modifying(clearAutomatically = true, flushAutomatically = true)
     @Query("UPDATE ParkingSpot p SET p.status = 'AVAILABLE', p.reservedAt = null " +
