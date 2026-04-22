@@ -39,7 +39,7 @@
         private final ParkingSpotRepository parkingSpotRepository;
         private final ParkingSpotService parkingSpotService;
         private final ReservationRepository reservationRepository;
-        private final TaskScheduler taskScheduler; // 💡 1. TaskScheduler 주입
+        private final TaskScheduler taskScheduler; //1. TaskScheduler 주입
         private final ObjectProvider<ReservationService> reservationServiceProvider;
         private final PaymentRepository paymentRepository;
         private final SseEmitterManager sseEmitterManager;
@@ -63,7 +63,7 @@
 
         @Transactional
         public void cancelReservation(Long reservationId, Long userId, boolean isForced) {
-            // 💡 Fetch Join으로 자리 정보까지 한 번에 가져옵니다.
+            //Fetch Join으로 자리 정보까지 한 번에 가져옵니다.
             Reservation reservation = reservationRepository.findByIdWithParkingSpot(reservationId)
                     .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 예약입니다."));
 
@@ -71,7 +71,7 @@
                 throw new IllegalStateException("이미 취소 처리된 예약입니다.");
             }
 
-            // ✨ [검증] 관리자가 아닐 때만(isForced=false) 본인 확인 및 30분 정책 체크
+            //[검증] 관리자가 아닐 때만(isForced=false) 본인 확인 및 30분 정책 체크
             if (!isForced) {
                 // 1. 권한 검증: 본인 예약인지 확인
                 if (userId == null || !reservation.getUser().getId().equals(userId)) {
@@ -126,17 +126,16 @@
             ParkingLot parkingLot = parkingLotRepository.findById(reqDto.parkingLotId())
                     .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 주차장입니다."));
 
-            // 4. 주차 자리 조회 (🔥비관적 락 획득)
             ParkingSpot parkingSpot = parkingSpotRepository.findById(reqDto.parkingSpotId())
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 주차 자리입니다."));
 
 
-            // 💡 수정된 부분 1: 현재 자리가 누군가 결제 중(OCCUPIED)인지 먼저 확인합니다.
+            //수정된 부분 1: 현재 자리가 누군가 결제 중(OCCUPIED)인지 먼저 확인
             if (parkingSpot.getStatus() == SpotStatus.OCCUPIED) {
                 throw new IllegalStateException("현재 다른 사용자가 결제 진행 중인 자리입니다. 잠시 후 다시 시도해주세요.");
             }
 
-            // 4. 선택한 주차장의 ID와 실제 주차 자리가 속한 주차장의 ID가 일치하는지 검증합니다.
+            // 4. 선택한 주차장의 ID와 실제 주차 자리가 속한 주차장의 ID가 일치하는지 검증
             if (!parkingSpot.getParkingLot().getId().equals(reqDto.parkingLotId())) {
                 throw new IllegalArgumentException("선택하신 주차장(ID: " + reqDto.parkingLotId() +
                         ")에 해당 주차 자리(ID: " + reqDto.parkingSpotId() + ")가 존재하지 않습니다.");
@@ -158,7 +157,7 @@
                 throw new IllegalStateException("해당 시간에 이미 예약된 자리입니다.");
             }
 
-            // ✨ [신규 추가] 1인 1주차장 1자리 제한 검증
+            // [신규 추가] 1인 1주차장 1자리 제한 검증
             List<ReservationStatus> activeStatuses = List.of(ReservationStatus.PENDING, ReservationStatus.CONFIRMED, ReservationStatus.COMPLETED);
             boolean hasActiveReservation = reservationRepository.existsByUserIdAndParkingLotIdAndStatusIn(
                 userId, reqDto.parkingLotId(), activeStatuses
@@ -167,7 +166,7 @@
             if (hasActiveReservation) {
                 throw new IllegalStateException("이미 이 주차장에 진행 중인 예약(또는 선점)이 존재합니다. 1주차장 당 1자리만 이용 가능합니다.");
             }
-            // 6. 🔥 CAS로 원자적 점유 시도
+            // 6.CAS로 원자적 점유 시도
             int updated = parkingSpotRepository.tryReserve(parkingSpot.getId(), LocalDateTime.now());
             if (updated == 0) {
                 throw new IllegalStateException("방금 다른 사용자가 선점했습니다. 다른 자리를 선택해주세요.");
@@ -194,9 +193,9 @@
             Reservation savedReservation = reservationRepository.save(newReservation);
             Long reservationId = savedReservation.getId(); // ID 추출
 
-            // 💡 2. [실시간 취소 예약] 5분 뒤에 아래 cancelIfUnpaid 메서드를 실행합니다.
+            //2. [실시간 취소 예약] 5분 뒤에 아래 cancelIfUnpaid 메서드를 실행
             taskScheduler.schedule(() -> {
-                 // 💡 자기 자신의 프록시를 가져와서 호출해야 @Transactional이 정상 작동합니다.
+                 //자기 자신의 프록시를 가져와서 호출해야 @Transactional이 정상 작동
                 ReservationService self = reservationServiceProvider.getObject();
                 self.cancelIfUnpaid(reservationId);
             }, Instant.now().plusSeconds(300));
@@ -207,7 +206,7 @@
 
         @Transactional // 반드시 별도의 트랜잭션으로 실행되어야 함
         public void cancelIfUnpaid(Long reservationId) {
-            // 💡 findById 대신 새로 만든 Fetch Join 메서드 사용
+            //findById 대신 새로 만든 Fetch Join 메서드 사용
             reservationRepository.findByIdWithParkingSpot(reservationId).ifPresent(res -> {
                 if (res.getStatus() == ReservationStatus.PENDING && res.getPaymentRequestedAt() == null) {
                     res.cancel();
@@ -244,7 +243,7 @@
                 res.getParkingSpot().release();
                 log.info("[성공] 주차자리 해제 완료: spotId {}", res.getParkingSpot().getId());
             } else {
-                // 💡 이미 다른 곳에서 바꿨다면 여기서 로그를 남깁니다.
+                //이미 다른 곳에서 바꿨다면 여기서 로그를 남깁니다.
                 log.info("[스킵] 주차자리가 이미 AVAILABLE 상태입니다: spotId {}", res.getParkingSpot().getId());
             }
         }

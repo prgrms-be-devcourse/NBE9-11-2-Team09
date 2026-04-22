@@ -21,7 +21,7 @@ public record AdminReservationResDto(
         ReservationStatus status,
         LocalDateTime createdTime
 ) {
-    // 정적 팩토리 메서드는 record 내부에서도 동일하게 사용 가능합니다.
+    // 정적 팩토리 메서드는 record 내부에서도 동일하게 사용 가능
     public static AdminReservationResDto from(Reservation reservation) {
         return new AdminReservationResDto(
                 reservation.getId(),

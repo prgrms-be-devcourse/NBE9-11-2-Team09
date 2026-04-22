@@ -60,7 +60,7 @@
 //                .parkingSpot(parkingSpot)
 //                .startTime(LocalDateTime.now().plusHours(1))
 //                .endTime(LocalDateTime.now().plusHours(3))
-//                .status(ReservationStatus.CONFIRMED) // 🔥 신버전: 초기 상태 설정 (NULL 에러 방지)
+//                .status(ReservationStatus.CONFIRMED) // 신버전: 초기 상태 설정 (NULL 에러 방지)
 //                .build());
 //    }
 //    }

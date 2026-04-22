@@ -8,7 +8,7 @@ import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
 import org.springframework.scheduling.annotation.EnableScheduling;
 
 @EnableCaching
-@EnableScheduling // 👈 스케줄러 활성화!
+@EnableScheduling //스케줄러 활성화!
 @EnableJpaAuditing
 @SpringBootApplication
 @ComponentScan(basePackages = "com.example.parking")
