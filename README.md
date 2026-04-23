@@ -82,4 +82,4 @@ src
 | 강원석 | Payment 도메인 |
 | 이현태 | Parking Spot 도메인 |
 | 최민호 | User 도메인 |
-| 황지윤 | Parking Spot 도메인 |
+| 황지윤 | Parking lot 도메인 |
